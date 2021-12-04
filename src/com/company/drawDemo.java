@@ -19,7 +19,7 @@ public class drawDemo extends JLabel {
     ArrayList<Shape> shapes = new ArrayList<Shape>();
 
     public static void main(String[] args) {
-        ImageReader reader = new ImageReader();
+        ImageReader reader = ImageReader.getInstance();
         ArrayList<File> list_img = new ArrayList<File>();
         list_img = reader.FolderConfig("/Users/yze/Downloads/USC/USCOne");
         BufferedImage testImage = new BufferedImage(352,288,BufferedImage.TYPE_INT_RGB);
