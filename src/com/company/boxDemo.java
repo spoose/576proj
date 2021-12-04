@@ -56,7 +56,7 @@ public class boxDemo extends JFrame {
     JPanel panel3_control_box2 = new JPanel();// import & stop
     JButton jb_import_sec = new JButton("\uDBC0\uDE05");
     JButton jb_stop_sec = new JButton("\uDBC1\uDF2A");
-    drawDemo video_sec;
+    JLabel video_sec;
 
 
     public boxDemo()
@@ -167,6 +167,8 @@ public class boxDemo extends JFrame {
         panel1_control_box2.add(jb_redraw);
         panel1_control_box2.setBackground(Color.PINK);
 
+        jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
+        jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
         jb_redraw.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -220,7 +222,7 @@ public class boxDemo extends JFrame {
         BoxLayout layout3 = new BoxLayout(panel3, BoxLayout.Y_AXIS);
         panel3.setLayout(layout3);
 
-        video_sec = new drawDemo();
+        video_sec = new JLabel();
         video_sec.setBorder(new LineBorder(Color.black));
         video_sec.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -258,8 +260,6 @@ public class boxDemo extends JFrame {
         // Set the window to be visible as the default to be false
 //        pack();
         setVisible(true);
-        jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
-        jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
     }
 
     private class btnPrevListener implements ActionListener {
@@ -318,7 +318,6 @@ public class boxDemo extends JFrame {
         if (!secondary_video.isEmpty()) {
             slider_p3.reset(secondary_video);
             video_sec.setIcon(new ImageIcon(reader.BImgFromFile(secondary_video.get(0))));
-            video_sec.shapes.clear();
         }
     }
 
