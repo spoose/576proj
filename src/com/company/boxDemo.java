@@ -9,11 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class boxDemo extends JFrame {
 
 //    drawDemo video_ori_label;
     boolean imported = false;
+    boolean first_flag = true;
+
     int currentFrame = 0;
     ArrayList<File> primary_video;
     ArrayList<File> secondary_video;
@@ -36,6 +40,8 @@ public class boxDemo extends JFrame {
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
     JButton jb_stop_ori = new JButton("\uDBC1\uDF2A Pause");
     drawDemo video_ori;
+    Map<Integer,drawDemo> video_ori_map;//a map of video_ori, each represents each frame, each has own shapes( box bounding info )
+    Map<Integer,drawDemo> video_ori_map_sec;
 
     /**
      * panel2: link operation section
@@ -51,7 +57,7 @@ public class boxDemo extends JFrame {
     JPanel panel3 = new JPanel(); //bottom right
     JPanel panel3_control_box = new JPanel(); // slider
     JButton jb_prev_p3 = new JButton("<");
-    Slider slider_p3;
+    Slider_sec slider_p3;
     JButton jb_next_p3 = new JButton(">");
     JPanel panel3_control_box2 = new JPanel();// import & stop
     JButton jb_import_sec = new JButton("\uDBC0\uDE05");
@@ -144,10 +150,13 @@ public class boxDemo extends JFrame {
 
 
         video_ori = new drawDemo();
-
+        video_ori_map = new HashMap<>();
+        video_ori_map_sec = new HashMap<>();
+        
         JLabel status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video);
+        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video,video_ori_map);
         slider_p1.setCanvas(video_ori);
+        currentFrame = slider_p1.getCurrentFrame();
 
         jb_prev.setFont(new Font("Dialog", Font.PLAIN, 20));
         jb_prev.addActionListener( new btnPrevListener());
@@ -158,7 +167,6 @@ public class boxDemo extends JFrame {
         panel1_control_box.add(slider_p1);
         panel1_control_box.add(jb_next);
 //        panel1_control_box.setBackground(Color.pink);
-
 //        panel1_control_box2.setLayout(new BoxLayout(panel1_control_box2, BoxLayout.X_AXIS));
 //        panel1_control_box2.setAlignmentY(Component.BOTTOM_ALIGNMENT);
         panel1_control_box2.add(jb_import_ori);
@@ -223,18 +231,26 @@ public class boxDemo extends JFrame {
         panel3.setLayout(layout3);
 
         video_sec = new JLabel();
+        video_sec.setPreferredSize(new Dimension(352, 288));
         video_sec.setBorder(new LineBorder(Color.black));
         video_sec.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel status2 = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p3 = new Slider(status2, "Value of the slider is: %d", secondary_video);
+        status2.setAlignmentX(Component.CENTER_ALIGNMENT);
+        slider_p3 = new Slider_sec(status2, "Value of the slider is: %d", secondary_video, video_ori_map_sec);
         slider_p3.setCanvas(video_sec);
+
+        jb_prev_p3.setFont(new Font("Dialog", Font.PLAIN, 20));
+        jb_prev_p3.addActionListener( new btnPrevListener3());
+        jb_next_p3.setFont(new Font("Dialog", Font.PLAIN, 20));
+        jb_next_p3.addActionListener( new btnNextListener3());
 
         panel3_control_box.add(jb_prev_p3);
         panel3_control_box.add(slider_p3);
         panel3_control_box.add(jb_next_p3);
         panel3_control_box2.add(jb_import_sec);
         panel3_control_box2.add(jb_stop_sec);
+        panel3_control_box2.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel3.add(video_sec);
         panel3.add(panel3_control_box);
         panel3.add(status2);
@@ -268,8 +284,34 @@ public class boxDemo extends JFrame {
         }
     }
 
+    private class btnPrevListener3 implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            slider_p3.back();
+        }
+    }
+
+    private class btnNextListener3 implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            slider_p3.forward();
+        }
+    }
+
+
+
     private class btnNextListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
+            currentFrame = slider_p1.getCurrentFrame();
+            if (currentFrame == 0 && first_flag ){
+                drawDemo first_frame_primary_video = new drawDemo();
+//            first_video_ori.setIcon(imageIcon);
+                for (int i = 0; i < video_ori.shapes.size(); i++) {
+                    first_frame_primary_video.shapes.add(video_ori.shapes.get(i));
+                }
+                System.out.println("-----size of first_video_ori---------:"+first_frame_primary_video.shapes);
+                video_ori_map.put(0,first_frame_primary_video);
+                first_flag = false;
+            }
+
             slider_p1.forward();
         }
     }
