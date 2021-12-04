@@ -7,20 +7,20 @@ import java.util.Arrays;
 
 public class ImageReader {
 
-    private ArrayList<File> list_img;
+    private static ImageReader singleton;
 
-    public static void main(String[] args) {
-        ImageReader reader = new ImageReader();
-        reader.list_img = reader.FolderConfig("/Users/yze/Downloads/USC/USCOne");
-        BufferedImage testImage = new BufferedImage(352,288,BufferedImage.TYPE_INT_RGB);
-        testImage = reader.BImgFromFile(reader.list_img.get(0));
+    public static ImageReader getInstance() {
+        if (singleton == null) {
+            singleton = new ImageReader();
+        }
+        return singleton;
     }
 
     private final int imageWidth = 352;
     private final int imageHeight = 288;
     private final int pixel_num;
 
-    ImageReader() {
+    private ImageReader() {
         pixel_num = imageWidth * imageHeight;
     }
 
