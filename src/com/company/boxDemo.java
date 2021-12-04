@@ -1,28 +1,22 @@
 package com.company;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.SliderUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class boxDemo extends JFrame {
 
 //    drawDemo video_ori_label;
-    boolean imported = true;
+    boolean imported = false;
     int currentFrame = 0;
-    ArrayList<File> fold_imgs;
-    ImageIcon oriIcon;
+    ArrayList<File> primary_video;
+    ArrayList<File> secondary_video;
     /**
      * panel0: link list, modify link, and save file
      */
@@ -36,12 +30,11 @@ public class boxDemo extends JFrame {
     JPanel panel1 = new JPanel(); //bottom-left
     JPanel panel1_control_box = new JPanel(); // slider
     JButton jb_prev = new JButton("<");
-    JSlider slider = new JSlider(0,9000,0);
+    Slider slider_p1;
     JButton jb_next = new JButton(">");
     JPanel panel1_control_box2 = new JPanel();// import & stop
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
     JButton jb_stop_ori = new JButton("\uDBC1\uDF2A Pause");
-    ImageIcon ori_img;
     drawDemo video_ori;
 
     /**
@@ -58,14 +51,12 @@ public class boxDemo extends JFrame {
     JPanel panel3 = new JPanel(); //bottom right
     JPanel panel3_control_box = new JPanel(); // slider
     JButton jb_prev_p3 = new JButton("<");
-    JSlider slider_p3 = new JSlider(0,9000);
+    Slider slider_p3;
     JButton jb_next_p3 = new JButton(">");
     JPanel panel3_control_box2 = new JPanel();// import & stop
     JButton jb_import_sec = new JButton("\uDBC0\uDE05");
     JButton jb_stop_sec = new JButton("\uDBC1\uDF2A");
-    ImageIcon sec_img;
-    JLabel video_sec;
-
+    drawDemo video_sec;
 
 
     public boxDemo()
@@ -149,46 +140,14 @@ public class boxDemo extends JFrame {
         /**
          * video(to be added hyperlink) section
          */
-        BufferedImage image = null;
-        try {
-            image = ImageIO.read(new File("/Users/yze/IdeaProjects/576proj/src/com/company/img.png"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        ori_img = new ImageIcon(image.getScaledInstance(352,288,Image.SCALE_DEFAULT));
-//        video_ori = new JLabel(ori_img);
 
-        ImageReader reader = new ImageReader();
-        ArrayList<File> list_img = new ArrayList<File>();
-        list_img = reader.FolderConfig("/Users/yze/Downloads/USC/USCOne");
-        fold_imgs = reader.FolderConfig("/Users/yze/Downloads/USC/USCOne");
-        BufferedImage testImage = new BufferedImage(352,288,BufferedImage.TYPE_INT_RGB);
-        testImage = reader.BImgFromFile(list_img.get(currentFrame));
-        ImageIcon imageIcon = new ImageIcon(testImage.getScaledInstance(352,288,Image.SCALE_DEFAULT));
-        oriIcon = new ImageIcon(testImage.getScaledInstance(352,288,Image.SCALE_DEFAULT));
+
         video_ori = new drawDemo();
-        video_ori.setIcon(imageIcon);
 
-        JLabel status = new JLabel("Slide the slider and you can get its value", JLabel.CENTER);
-        slider.setValue(0);
-        slider.setPaintTicks(true);
-        slider.setPaintLabels(true);
-//        slider.setPreferredSize(new Dimension(400, 50));
-        slider.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                status.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
-                currentFrame = ((JSlider)e.getSource()).getValue();
-                if (currentFrame >= 9000){
-                    currentFrame = 9000;
-                }
-                BufferedImage newImage = reader.BImgFromFile(fold_imgs.get(currentFrame));
-                oriIcon = new ImageIcon(newImage.getScaledInstance(352,288,Image.SCALE_DEFAULT));
-                video_ori.setIcon(oriIcon);
-
-                repaint();
-            }
-        });
+        JLabel status = new JLabel("Import a Video to Start!", JLabel.CENTER);
+        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video);
+        slider_p1.setCanvas(video_ori);
 
         jb_prev.setFont(new Font("Dialog", Font.PLAIN, 20));
         jb_prev.addActionListener( new btnPrevListener());
@@ -196,7 +155,7 @@ public class boxDemo extends JFrame {
         jb_next.addActionListener( new btnNextListener());
 
         panel1_control_box.add(jb_prev);
-        panel1_control_box.add(slider);
+        panel1_control_box.add(slider_p1);
         panel1_control_box.add(jb_next);
 //        panel1_control_box.setBackground(Color.pink);
 
@@ -261,25 +220,20 @@ public class boxDemo extends JFrame {
         BoxLayout layout3 = new BoxLayout(panel3, BoxLayout.Y_AXIS);
         panel3.setLayout(layout3);
 
-        video_sec = new JLabel(ori_img);
-        panel3.add(video_sec);
-        JLabel status2 = new JLabel("Slide the slider and you can get its value", JLabel.CENTER);
-        slider_p3.setValue(0);
-        slider_p3.setPaintTicks(true);
-        slider_p3.setPaintLabels(true);
-        slider_p3.setPreferredSize(new Dimension(200, 50));
-//        slider.addChangeListener(this);
-        slider_p3.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent e) {
-                status2.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
-            }
-        });
+        video_sec = new drawDemo();
+        video_sec.setBorder(new LineBorder(Color.black));
+        video_sec.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel status2 = new JLabel("Import a Video to Start!", JLabel.CENTER);
+        slider_p3 = new Slider(status2, "Value of the slider is: %d", secondary_video);
+        slider_p3.setCanvas(video_sec);
 
         panel3_control_box.add(jb_prev_p3);
         panel3_control_box.add(slider_p3);
         panel3_control_box.add(jb_next_p3);
         panel3_control_box2.add(jb_import_sec);
         panel3_control_box2.add(jb_stop_sec);
+        panel3.add(video_sec);
         panel3.add(panel3_control_box);
         panel3.add(status2);
         panel3.add(panel3_control_box2);
@@ -304,27 +258,67 @@ public class boxDemo extends JFrame {
         // Set the window to be visible as the default to be false
 //        pack();
         setVisible(true);
+        jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
+        jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
     }
 
     private class btnPrevListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-//            if (!imported) return;
-            if (slider.getMinimum() < slider.getValue()) {
-                slider.setValue(slider.getValue() - 1);
-            }
+            slider_p1.back();
         }
     }
 
     private class btnNextListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-//            if (!imported) return;
-            System.out.println("btnNextListener clicked ");
-            if (slider.getMaximum() > slider.getValue()) {
-                System.out.println("btnNextListener0: "+slider.getValue());
-                System.out.println("btnNextListener1: "+slider.getValue()+1);
-                slider.setValue(slider.getValue() + 1);
-                System.out.println("btnNextListener2: "+slider.getValue());
+            slider_p1.forward();
+        }
+    }
+
+    private class btnImportListener implements ActionListener {
+
+        private final String title;
+        private final Component parent;
+        private final boolean isPrimary;
+
+        btnImportListener(String title, Component parent, boolean isPrimary) {
+            this.title = title;
+            this.parent = parent;
+            this.isPrimary = isPrimary;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.setDialogTitle(title);
+            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
+                if (isPrimary) loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
+                else loadSecondaryVideo(fileChooser.getSelectedFile().getPath());
             }
+        }
+    }
+
+    private void loadPrimaryVideo(String path) {
+        ImageReader reader = ImageReader.getInstance();
+        primary_video = reader.FolderConfig(path);
+        if (!primary_video.isEmpty()) {
+            imported = true;
+            slider_p1.reset(primary_video);
+            video_ori.setIcon(new ImageIcon(reader.BImgFromFile(primary_video.get(0))));
+            video_ori.shapes.clear();
+        }
+
+        // TODO : Reload MetaData Files
+        // TODO : Reset Secondary Video Panel
+    }
+
+    private void loadSecondaryVideo(String path) {
+        ImageReader reader = ImageReader.getInstance();
+        secondary_video = reader.FolderConfig(path);
+        if (!secondary_video.isEmpty()) {
+            slider_p3.reset(secondary_video);
+            video_sec.setIcon(new ImageIcon(reader.BImgFromFile(secondary_video.get(0))));
+            video_sec.shapes.clear();
         }
     }
 
