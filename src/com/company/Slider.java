@@ -71,14 +71,10 @@ class Slider extends JSlider implements ChangeListener {
         System.out.println("--------- slider change---------");
         currentFrame = ((JSlider)e.getSource()).getValue();
         status.setText("Value of the slider is(current frame): " + currentFrame);
-        
-
         // status.setText(String.format(format, getValue() + 1));
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
-
             drawDemo temp_video_ori = new drawDemo();
-
             int size = video_ori_map.size();
             if (video_ori_map.containsKey(currentFrame)){
                 System.out.println("video_ori_map contains:"+currentFrame+"'s frame"+", the map size: "+size);
