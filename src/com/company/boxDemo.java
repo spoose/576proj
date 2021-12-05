@@ -20,6 +20,7 @@ public class boxDemo extends JFrame {
     boolean first_flag = true;
 
     int currentFrame = 0;
+    int currentFrame_sec = 0;
     int detectAnchorIndex = 0;
     int detectAnchorIndex2 = 0;
     ArrayList<File> primary_video;
@@ -185,65 +186,9 @@ public class boxDemo extends JFrame {
         jbDetect.setEnabled (false);
         jb_redraw.setEnabled (false);
 
-        jbDectAnchor.addActionListener(new jbDectAnchorListener());
-        jbDectAnchor2.addActionListener(new jbDectAnchorListener2());
-        jbDetect.addActionListener(new jbDetectListener());
-
-
-        // jbDetect.addActionListener(new ActionListener(){
-        //     @Override
-        //     public void actionPerformed(ActionEvent e) {
-        //         int firstFrame = detectAnchorIndex;
-        //         int lastFrame = detectAnchorIndex2;
-        //         // int index = 0;
-        //         int index = video_ori_map.get(firstFrame).shapes.size() -1  ; // last shape in shape-list
-        //         System.out.println("frame detect(): first frame:"+ firstFrame +", index:"+index);
-
-        //         /**
-        //          * xFirst: top left x of first frame
-        //          * xLast: top left x of last frame
-        //          */
-        //         double xFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getX();
-        //         double xLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getX();
-        //         double yFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getY();
-        //         double yLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getY();
-        //         double firstWidth = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getWidth();
-        //         double firstHeight = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getHeight();
-        //         double lastWidth = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getWidth();
-        //         double lastHeight = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getHeight();
-
-        //         // System.out.println("frame detect(): xFirst:"+xFirst+",xLast:"+xLast);
-        //         // System.out.println("frame detect(): yFirst:"+yFirst+",yLast:"+yLast);
-        //         // System.out.println("frame detect(): firstWidth:"+firstWidth+",firstHeight:"+firstHeight);
-        //         // System.out.println("frame detect(): lastWidth:"+lastWidth+",lastHeight:"+lastHeight);
-
-        //         double xChange = (xLast - xFirst)/(lastFrame-firstFrame);
-        //         double yChange = (yLast - yFirst)/(lastFrame-firstFrame);
-        //         double widthChange = (lastWidth - firstWidth)/(lastFrame-firstFrame);
-        //         double heightChange = (lastHeight - firstHeight)/(lastFrame-firstFrame);
-        //         System.out.println("frame detect(): xChange:"+xChange+",yChange:"+yChange);
-
-        //         for(int i = firstFrame+1; i < lastFrame; i++){
-        //             drawDemo tempItem = new drawDemo();
-        //             int x1 = (int)(xFirst + xChange*(i-firstFrame));
-        //             int y1 = (int)(yFirst + yChange*(i-firstFrame));
-        //             int x2 = (int)(x1 + firstWidth + widthChange*(i-firstFrame));
-        //             int y2 = (int)(y1 + firstHeight + heightChange*(i-firstFrame));
-                    
-        //             Shape temShape = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
-        //             // Shape temShape = new Rectangle2D.Float(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
-        //             System.out.println("i:"+i+",frame detect(): temShape:"+temShape);
-
-        //             tempItem.shapes.add(temShape);
-        //             video_ori_map.put(i, tempItem);
-        //         }
-        //         for (Shape s : video_ori_map.get(firstFrame).shapes) {
-        //             System.out.println("frame detect():"+s.getBounds2D().getX()+","+s.getBounds2D().getY());
-        //         }
-        //         jbDectAnchor2.setEnabled (false);
-        //         jbDetect.setEnabled (false);
-        //     }
-        // });
+        jbDectAnchor.addActionListener(new jbDectAnchorListener());//detect function: set first anchor
+        jbDectAnchor2.addActionListener(new jbDectAnchorListener2());//detect function: set last anchor
+        jbDetect.addActionListener(new jbDetectListener());//detect function: detect between two anchors
 
         jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
         jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
@@ -355,8 +300,6 @@ public class boxDemo extends JFrame {
                 detectAnchorIndex = currentFrame;
                 System.out.println("jbDectAnchor(): detectAnchorIndex is: "+detectAnchorIndex);
                 System.out.println("jbDectAnchor(): video_ori_map["+detectAnchorIndex+"]:"+ video_ori_map.get(detectAnchorIndex).shapes.size());
-                // int size = video_ori_map.get(detectAnchorIndex).shapes.size() ; // last shape in shape-list
-                // System.out.println("jbDectAnchor(): size is: "+ size);
 
                 jbDectAnchor2.setEnabled (true);
             }
