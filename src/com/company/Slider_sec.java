@@ -68,7 +68,7 @@ class Slider_sec extends JSlider implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        System.out.println("--------- slider2 change---------");
+        // System.out.println("--------- slider2 change---------");
         // status.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
         currentFrame = ((JSlider)e.getSource()).getValue();
         status.setText(String.format(format, getValue() + 1));
@@ -77,6 +77,6 @@ class Slider_sec extends JSlider implements ChangeListener {
             canvas.setIcon(new ImageIcon(newImage));
             canvas.repaint();
         }
-        System.out.println("--------- slider2 change-end--------");
+        // System.out.println("--------- slider2 change-end--------");
     }
 }
