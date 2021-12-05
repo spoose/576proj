@@ -16,7 +16,6 @@ class Slider extends JSlider implements ChangeListener {
     private final String format;
     private ArrayList<File> data;
 
-    // private int currentFrame;
     private int currentFrame;
     private Map<Integer,drawDemo> video_ori_map;
 
@@ -68,22 +67,31 @@ class Slider extends JSlider implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        System.out.println(" ");
         System.out.println("--------- slider change---------");
-        status.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
         currentFrame = ((JSlider)e.getSource()).getValue();
+        status.setText("Value of the slider is(current frame): " + currentFrame);
+        
 
         // status.setText(String.format(format, getValue() + 1));
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
 
             drawDemo temp_video_ori = new drawDemo();
+
+            int size = video_ori_map.size();
             if (video_ori_map.containsKey(currentFrame)){
-                 System.out.println("video_ori_map contains:"+currentFrame+"'s frame"+", the map size: "+video_ori_map.size());
-                 temp_video_ori = video_ori_map.get(currentFrame);
+                System.out.println("video_ori_map contains:"+currentFrame+"'s frame"+", the map size: "+size);
+                // if(!video_ori_map.get(currentFrame).shapes.isEmpty()){
+                    temp_video_ori = video_ori_map.get(currentFrame);
+                // }
              }
-            canvas.shapes =temp_video_ori.shapes;
+            canvas.shapes = temp_video_ori.shapes;
             canvas.setIcon(new ImageIcon(newImage));
             video_ori_map.put(currentFrame,temp_video_ori);
+            
+            System.out.println("after put, video_ori_map shapae size:"+video_ori_map.get(currentFrame).shapes.size()+", the map size: "+video_ori_map.size());
+
             canvas.repaint();
             System.out.println("--------- slider change-end--------");
         }
