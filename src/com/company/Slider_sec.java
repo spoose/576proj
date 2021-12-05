@@ -71,7 +71,7 @@ class Slider_sec extends JSlider implements ChangeListener {
         // System.out.println("--------- slider2 change---------");
         // status.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
         currentFrame = ((JSlider)e.getSource()).getValue();
-        status.setText(String.format(format, getValue() + 1));
+        status.setText(String.format(format, getValue()));
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
             canvas.setIcon(new ImageIcon(newImage));
