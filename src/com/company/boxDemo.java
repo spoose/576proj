@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.awt.geom.Rectangle2D;
 
 public class boxDemo extends JFrame {
 
@@ -19,6 +20,8 @@ public class boxDemo extends JFrame {
     boolean first_flag = true;
 
     int currentFrame = 0;
+    int detectAnchorIndex = 0;
+    int detectAnchorIndex2 = 0;
     ArrayList<File> primary_video;
     ArrayList<File> secondary_video;
     /**
@@ -38,7 +41,8 @@ public class boxDemo extends JFrame {
     JButton jb_next = new JButton(">");
     JPanel panel1_control_box2 = new JPanel();// import & stop
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
-    JButton jb_stop_ori = new JButton("\uDBC1\uDF2A Pause");
+    JButton jbDectAnchor = new JButton("􀍷 First Anchor ");//\uDBC1\uDF2A
+    JButton jbDectAnchor2 = new JButton("􀺪 Last Anchor ");
     drawDemo video_ori;
     Map<Integer,drawDemo> video_ori_map;//a map of video_ori, each represents each frame, each has own shapes( box bounding info )
     Map<Integer,drawDemo> video_ori_map_sec;
@@ -47,7 +51,7 @@ public class boxDemo extends JFrame {
      * panel2: link operation section
      */
     JPanel panel2 = new JPanel(); //bottom center panel
-    JButton jb_draw = new JButton("\uDBC0\uDE0C Draw  ");
+    JButton jbDetect = new JButton("\uDBC0\uDE0C Frame Detect");
     JButton jb_redraw = new JButton("\uDBC0\uDC61 Redraw");
     JButton jb_link = new JButton("\uDBC1\uDCA1 Link!");
 
@@ -170,10 +174,76 @@ public class boxDemo extends JFrame {
 //        panel1_control_box2.setLayout(new BoxLayout(panel1_control_box2, BoxLayout.X_AXIS));
 //        panel1_control_box2.setAlignmentY(Component.BOTTOM_ALIGNMENT);
         panel1_control_box2.add(jb_import_ori);
-        panel1_control_box2.add(jb_stop_ori);
-        panel1_control_box2.add(jb_draw);
+        panel1_control_box2.add(jbDectAnchor);
+        panel1_control_box2.add(jbDectAnchor2);
+        panel1_control_box2.add(jbDetect);
         panel1_control_box2.add(jb_redraw);
         panel1_control_box2.setBackground(Color.PINK);
+        
+        jbDectAnchor2.setEnabled (false);
+        jbDectAnchor.setEnabled (false);
+        jbDetect.setEnabled (false);
+        jb_redraw.setEnabled (false);
+
+        jbDectAnchor.addActionListener(new jbDectAnchorListener());
+        jbDectAnchor2.addActionListener(new jbDectAnchorListener2());
+        jbDetect.addActionListener(new jbDetectListener());
+
+
+        // jbDetect.addActionListener(new ActionListener(){
+        //     @Override
+        //     public void actionPerformed(ActionEvent e) {
+        //         int firstFrame = detectAnchorIndex;
+        //         int lastFrame = detectAnchorIndex2;
+        //         // int index = 0;
+        //         int index = video_ori_map.get(firstFrame).shapes.size() -1  ; // last shape in shape-list
+        //         System.out.println("frame detect(): first frame:"+ firstFrame +", index:"+index);
+
+        //         /**
+        //          * xFirst: top left x of first frame
+        //          * xLast: top left x of last frame
+        //          */
+        //         double xFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getX();
+        //         double xLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getX();
+        //         double yFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getY();
+        //         double yLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getY();
+        //         double firstWidth = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getWidth();
+        //         double firstHeight = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getHeight();
+        //         double lastWidth = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getWidth();
+        //         double lastHeight = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getHeight();
+
+        //         // System.out.println("frame detect(): xFirst:"+xFirst+",xLast:"+xLast);
+        //         // System.out.println("frame detect(): yFirst:"+yFirst+",yLast:"+yLast);
+        //         // System.out.println("frame detect(): firstWidth:"+firstWidth+",firstHeight:"+firstHeight);
+        //         // System.out.println("frame detect(): lastWidth:"+lastWidth+",lastHeight:"+lastHeight);
+
+        //         double xChange = (xLast - xFirst)/(lastFrame-firstFrame);
+        //         double yChange = (yLast - yFirst)/(lastFrame-firstFrame);
+        //         double widthChange = (lastWidth - firstWidth)/(lastFrame-firstFrame);
+        //         double heightChange = (lastHeight - firstHeight)/(lastFrame-firstFrame);
+        //         System.out.println("frame detect(): xChange:"+xChange+",yChange:"+yChange);
+
+        //         for(int i = firstFrame+1; i < lastFrame; i++){
+        //             drawDemo tempItem = new drawDemo();
+        //             int x1 = (int)(xFirst + xChange*(i-firstFrame));
+        //             int y1 = (int)(yFirst + yChange*(i-firstFrame));
+        //             int x2 = (int)(x1 + firstWidth + widthChange*(i-firstFrame));
+        //             int y2 = (int)(y1 + firstHeight + heightChange*(i-firstFrame));
+                    
+        //             Shape temShape = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
+        //             // Shape temShape = new Rectangle2D.Float(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+        //             System.out.println("i:"+i+",frame detect(): temShape:"+temShape);
+
+        //             tempItem.shapes.add(temShape);
+        //             video_ori_map.put(i, tempItem);
+        //         }
+        //         for (Shape s : video_ori_map.get(firstFrame).shapes) {
+        //             System.out.println("frame detect():"+s.getBounds2D().getX()+","+s.getBounds2D().getY());
+        //         }
+        //         jbDectAnchor2.setEnabled (false);
+        //         jbDetect.setEnabled (false);
+        //     }
+        // });
 
         jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
         jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
@@ -278,6 +348,85 @@ public class boxDemo extends JFrame {
         setVisible(true);
     }
 
+    private class jbDectAnchorListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+                currentFrame = slider_p1.getCurrentFrame();
+                detectAnchorIndex = currentFrame;
+                System.out.println("jbDectAnchor(): detectAnchorIndex is: "+detectAnchorIndex);
+                System.out.println("jbDectAnchor(): video_ori_map["+detectAnchorIndex+"]:"+ video_ori_map.get(detectAnchorIndex).shapes.size());
+                // int size = video_ori_map.get(detectAnchorIndex).shapes.size() ; // last shape in shape-list
+                // System.out.println("jbDectAnchor(): size is: "+ size);
+
+                jbDectAnchor2.setEnabled (true);
+            }
+    }
+
+    private class jbDectAnchorListener2 implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+                currentFrame = slider_p1.getCurrentFrame();
+                detectAnchorIndex2 = currentFrame;
+                System.out.println("jbDectAnchor2(): detectAnchorIndex2 is: "+detectAnchorIndex2);
+                jbDetect.setEnabled (true);
+            }
+    }
+
+    private class jbDetectListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int firstFrame = detectAnchorIndex;
+            int lastFrame = detectAnchorIndex2;
+            // int index = 0;
+            int index = video_ori_map.get(firstFrame).shapes.size() -1  ; // last shape in shape-list
+            System.out.println("frame detect(): first frame:"+ firstFrame +", index:"+index);
+
+            /**
+             * xFirst: top left x of first frame
+             * xLast: top left x of last frame
+             */
+            double xFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getX();
+            double xLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getX();
+            double yFirst = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getY();
+            double yLast = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getY();
+            double firstWidth = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getWidth();
+            double firstHeight = video_ori_map.get(firstFrame).shapes.get(index).getBounds2D().getHeight();
+            double lastWidth = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getWidth();
+            double lastHeight = video_ori_map.get(lastFrame).shapes.get(index).getBounds2D().getHeight();
+
+            // System.out.println("frame detect(): xFirst:"+xFirst+",xLast:"+xLast);
+            // System.out.println("frame detect(): yFirst:"+yFirst+",yLast:"+yLast);
+            // System.out.println("frame detect(): firstWidth:"+firstWidth+",firstHeight:"+firstHeight);
+            // System.out.println("frame detect(): lastWidth:"+lastWidth+",lastHeight:"+lastHeight);
+
+            double xChange = (xLast - xFirst)/(lastFrame-firstFrame);
+            double yChange = (yLast - yFirst)/(lastFrame-firstFrame);
+            double widthChange = (lastWidth - firstWidth)/(lastFrame-firstFrame);
+            double heightChange = (lastHeight - firstHeight)/(lastFrame-firstFrame);
+            System.out.println("frame detect(): xChange:"+xChange+",yChange:"+yChange);
+
+            for(int i = firstFrame+1; i < lastFrame; i++){
+                drawDemo tempItem = new drawDemo();
+                int x1 = (int)(xFirst + xChange*(i-firstFrame));
+                int y1 = (int)(yFirst + yChange*(i-firstFrame));
+                int x2 = (int)(x1 + firstWidth + widthChange*(i-firstFrame));
+                int y2 = (int)(y1 + firstHeight + heightChange*(i-firstFrame));
+                
+                Shape temShape = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
+                // Shape temShape = new Rectangle2D.Float(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
+                System.out.println("i:"+i+",frame detect(): temShape:"+temShape);
+
+                tempItem.shapes.add(temShape);
+                video_ori_map.put(i, tempItem);
+            }
+            for (Shape s : video_ori_map.get(firstFrame).shapes) {
+                System.out.println("frame detect():"+s.getBounds2D().getX()+","+s.getBounds2D().getY());
+            }
+            jbDectAnchor2.setEnabled (false);
+            jbDetect.setEnabled (false);
+            }
+    }
+
     private class btnPrevListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             slider_p1.back();
@@ -300,7 +449,7 @@ public class boxDemo extends JFrame {
 
     private class btnNextListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            currentFrame = slider_p1.getCurrentFrame();
+        
             if (currentFrame == 0 && first_flag ){
                 drawDemo first_frame_primary_video = new drawDemo();
 //            first_video_ori.setIcon(imageIcon);
@@ -313,6 +462,8 @@ public class boxDemo extends JFrame {
             }
 
             slider_p1.forward();
+            currentFrame = slider_p1.getCurrentFrame();
+            System.out.println("btnNext() currentFrame is:"+currentFrame);
         }
     }
 
@@ -334,6 +485,8 @@ public class boxDemo extends JFrame {
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setDialogTitle(title);
             if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
+                jbDectAnchor.setEnabled (true);
+                jb_redraw.setEnabled (true);
                 if (isPrimary) loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
                 else loadSecondaryVideo(fileChooser.getSelectedFile().getPath());
             }
