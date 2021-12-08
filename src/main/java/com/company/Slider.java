@@ -1,6 +1,7 @@
 package com.company;
 
 import javax.swing.*;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -18,17 +19,13 @@ class Slider extends JSlider {
         this.format = format;
         this.status = status;
         reset(video);
-        addMouseListener(new MouseListener() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (listener != null) {
                     listener.OnManualStateChange();
                 }
             }
-            public void mouseClicked(MouseEvent e) {}
-            public void mousePressed(MouseEvent e) {}
-            public void mouseEntered(MouseEvent e) {}
-            public void mouseExited(MouseEvent e) {}
         });
     }
 

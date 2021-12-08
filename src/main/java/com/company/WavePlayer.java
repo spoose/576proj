@@ -3,31 +3,24 @@ package com.company;
 import javax.sound.sampled.*;
 import java.io.*;
 
-public class WavePlayer extends AbstractPlayer<String> {
+public class WavePlayer extends AbstractPlayer<BufferedInputStream> {
     private BufferedInputStream inputStream;
     private Clip audioClip;
 
-    private int frameOffsetMicros = 0;
-
     public WavePlayer(Slider slider) {
-        slider.setManualChangeListener(() -> peek(slider.getValue()));
-    }
-
-    public void setVideoFrameLength(int frameLength) {
-        if (audioClip != null && frameLength > 0) {
-            frameOffsetMicros = (int) (audioClip.getMicrosecondLength() / frameLength);
-            while ((long) frameOffsetMicros * frameLength < audioClip.getMicrosecondLength()) {
-                frameOffsetMicros += 1;
-            }
+        if (slider != null) {
+            slider.setManualChangeListener(() -> peek(slider.getValue()));
         }
+        currentState = State.Stopped;
     }
 
-    public void open(String mediaSource) {
-        ImageReader reader = ImageReader.getInstance();
-        inputStream = reader.BWavFromFile(mediaSource);
+    @Override
+    public void open(BufferedInputStream mediaStream) {
+        inputStream = mediaStream;
         reset();
     }
 
+    @Override
     public void close() {
         if (audioClip != null && audioClip.isOpen()) {
             audioClip.stop();
@@ -37,17 +30,21 @@ public class WavePlayer extends AbstractPlayer<String> {
 
     @Override
     public void play() {
+        currentState = State.Playing;
         audioClip.start();
     }
 
     @Override
     public void pause() {
+        currentState = State.Paused;
         audioClip.stop();
     }
 
     @Override
     public void stop() {
-
+        currentState = State.Stopped;
+        audioClip.stop();
+        audioClip.close();
     }
 
     @Override
@@ -63,9 +60,9 @@ public class WavePlayer extends AbstractPlayer<String> {
     }
 
     @Override
-    void peek(long frameIndex) {
+    void peek(long milliseconds) {
         if (audioClip != null) {
-            audioClip.setMicrosecondPosition(frameIndex * frameOffsetMicros);
+            audioClip.setMicrosecondPosition(milliseconds * 1000);
         }
     }
 }

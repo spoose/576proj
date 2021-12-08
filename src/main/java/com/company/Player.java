@@ -5,12 +5,15 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Player extends JFrame {
+
+    AbstractPlayer<BufferedInputStream> audioPlayer;
 
     //    drawDemo video_ori_label;
     boolean imported = false;
@@ -87,6 +90,8 @@ public class Player extends JFrame {
             }
         });
         currentFrame = slider_p1.getCurrentFrame();
+
+        audioPlayer = new WavePlayer(null);    // create a new WavePlayer without self-control
 
         jb_import_ori.setFont(new Font("Dialog", Font.PLAIN, 20));
         jb_play.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -374,6 +379,9 @@ public class Player extends JFrame {
 //            video_ori.shapes.clear();
             jb_play.setEnabled (true);
 //            jb_stop.setEnabled (true);
+
+            audioPlayer.open(reader.BWavFromFile(imgPath));
+            audioPlayer.play();
         }
 
         // TODO : Reload MetaData Files
