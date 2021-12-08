@@ -3,6 +3,8 @@ package com.company;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -19,6 +21,8 @@ class Slider extends JSlider implements ChangeListener {
     private int currentFrame;
     private Map<Integer,drawDemo> video_ori_map;
 
+    private ManualChangeListener listener;
+
     Slider(JLabel status, String format, ArrayList<File> video, Map<Integer,drawDemo>$video_ori_map) {
         super();
         this.status = status;
@@ -26,6 +30,18 @@ class Slider extends JSlider implements ChangeListener {
         this.video_ori_map = $video_ori_map;
         reset(video);
         addChangeListener(this);
+        addMouseListener(new MouseListener() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (listener != null) {
+                    listener.OnManualStateChange();
+                }
+            }
+            public void mouseClicked(MouseEvent e) {}
+            public void mousePressed(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {}
+        });
     }
 
     public void forward() {
@@ -103,5 +119,13 @@ class Slider extends JSlider implements ChangeListener {
             canvas.repaint();
             System.out.println("--------- slider change-end--------");
         }
+    }
+
+    public void setManualChangeListener(ManualChangeListener listener) {
+        this.listener = listener;
+    }
+
+    public interface ManualChangeListener {
+        void OnManualStateChange();
     }
 }
