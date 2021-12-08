@@ -1,0 +1,44 @@
+[
+  {
+    "linkName": "testL",
+    "oriPath": "/Users/yze/USCOne",
+    "targetFrame": 100,
+    "targetPath": "/Users/yze/USCTwo",
+    "linkColor": -16711936,
+    "linkShape": {
+      "1": {
+        "x": 60.0,
+        "y": 60.0,
+        "width": 130.0,
+        "height": 140.0
+      },
+      "3": {
+        "x": 70.0,
+        "y": 70.0,
+        "width": 130.0,
+        "height": 140.0
+      }
+    }
+  },
+  {
+    "linkName": "testL",
+    "oriPath": "/Users/yze/USCOne",
+    "targetFrame": 100,
+    "targetPath": "/Users/yze/USCTwo",
+    "linkColor": -16711936,
+    "linkShape": {
+      "1": {
+        "x": 60.0,
+        "y": 60.0,
+        "width": 130.0,
+        "height": 140.0
+      },
+      "3": {
+        "x": 70.0,
+        "y": 70.0,
+        "width": 130.0,
+        "height": 140.0
+      }
+    }
+  }
+]

@@ -32,12 +32,14 @@ class Slider_sec extends JSlider implements ChangeListener {
     public void forward() {
         if (isEnabled() && getMaximum() > getValue()) {
             setValue(getValue() + 1);
+            currentFrame = getValue();
         }
     }
 
     public void back() {
         if (isEnabled() && getMinimum() < getValue()) {
             setValue(getValue() - 1);
+            currentFrame = getValue();
         }
     }
 
@@ -68,15 +70,16 @@ class Slider_sec extends JSlider implements ChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        // System.out.println("--------- slider2 change---------");
+//         System.out.println("--------- slider2 change---------");
         // status.setText("Value of the slider is: " + ((JSlider)e.getSource()).getValue());
         currentFrame = ((JSlider)e.getSource()).getValue();
         status.setText(String.format(format, getValue()));
+//        System.out.println("slider2 change current:"+currentFrame);
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
             canvas.setIcon(new ImageIcon(newImage));
             canvas.repaint();
         }
-        // System.out.println("--------- slider2 change-end--------");
+//         System.out.println("--------- slider2 change-end--------");
     }
 }

@@ -44,9 +44,9 @@ public class Player extends JFrame {
     JButton jb_next = new JButton(">");
     JPanel panel1_control_box2 = new JPanel();// import & play & stop
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
-    JButton jb_play = new JButton("\uDBC2\uDCE8 Play");
+    JButton jb_play = new JButton("\uDBC0\uDE95 Play");
     JButton jb_stop = new JButton("\uDBC2\uDE86 Stop");
-    JLabel video_area;//image area to display
+    ClickablePanel video_area;//image area to display
     Map<Integer,drawDemo> video_ori_map;//a map of video_ori, each represents each frame, each has own shapes( box bounding info )
     Map<Integer,drawDemo> video_ori_map_sec;
 
@@ -74,7 +74,7 @@ public class Player extends JFrame {
         /**
          * panel-bottom left: play, stop video
          */
-        video_area = new JLabel();
+        video_area = new ClickablePanel(this);
         video_area.setPreferredSize(new Dimension(352, 288));
         video_ori_map = new HashMap<>();
         video_ori_map_sec = new HashMap<>();
@@ -157,6 +157,12 @@ public class Player extends JFrame {
         setVisible(true);
     }
 
+    public JButton getJb_play(){
+
+        return this.jb_play;
+    }
+
+
     /**
      * ActionListener
      */
@@ -167,6 +173,8 @@ public class Player extends JFrame {
             videoPlayed = true;
 
             currentFrame = slider_p1.getCurrentFrame();
+            System.out.println("btnPlayListener currentFrame:"+currentFrame+"slider_p1.getValue():"+slider_p1.getValue());
+
             timeStamp = System.currentTimeMillis();
 
              video_thread = new Thread(new Runnable() {
@@ -246,10 +254,9 @@ public class Player extends JFrame {
     private class btnPrevListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             slider_p1.back();
+//            currentFrame = slider_p1.getCurrentFrame();
         }
     }
-
-
 
 
     private class btnNextListener implements ActionListener {
@@ -266,8 +273,8 @@ public class Player extends JFrame {
 //            }
 
             slider_p1.forward();
-            currentFrame = slider_p1.getCurrentFrame();
-            System.out.println("btnNext() currentFrame is:"+currentFrame);
+//            currentFrame = slider_p1.getCurrentFrame();
+//            System.out.println("btnNext() currentFrame is:"+currentFrame);
         }
     }
 
@@ -286,31 +293,148 @@ public class Player extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             fileChooser.setDialogTitle(title);
             if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
 //                jbDectAnchor.setEnabled (true);
 //                jb_redraw.setEnabled (true);
-                if (isPrimary) loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
+                String jsonPath = fileChooser.getSelectedFile().getPath();
+                String imgPath = getImgPath(jsonPath,0);//get oriPath, index doesn't matter
+                loadPrimaryVideo(imgPath,jsonPath);
+//                if (isPrimary) loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
             }
         }
     }
+    public String getImgPath(String jsonPath, int linkIndex) {
+        GasonRead read = new GasonRead(jsonPath);
+        String imgPath = read.getLinkList()[linkIndex].oriPath;
+        return imgPath;
+    }
 
-    private void loadPrimaryVideo(String path) {
+    public void loadPrimaryVideo(String imgPath,String jsonPath) {
         ImageReader reader = ImageReader.getInstance();
-        primary_video = reader.FolderConfig(path);
+        primary_video = reader.FolderConfig(imgPath);
         if (!primary_video.isEmpty()) {
             imported = true;
             slider_p1.reset(primary_video);
             video_area.setIcon(new ImageIcon(reader.BImgFromFile(primary_video.get(0))));
+
+            GasonRead read = new GasonRead(jsonPath);
+            System.out.println("reaad:" + read.toString());
+            if (read.getLinkList() == null){
+                System.out.println("read.getLinkList() == null");
+                System.out.println("last video, doesn't contain hyperlink ");
+                video_area.shapeListMap = new HashMap<>();
+                for (int j = 0; j < 8999; j++){//initialization
+                    video_area.shapeListMap.put(j,new ArrayList<>());
+                }
+                return;
+            }
+//            ArrayList<Map<Integer,Shape>> linkShapeList = new ArrayList<>();
+            Map<Integer,ArrayList<Rectangle>> shapeListMap = new HashMap<>();// each frame has list of shapes, used to draw more than one box in a frame
+            for (int j = 0; j < 8999; j++){//initialization
+                shapeListMap.put(j,new ArrayList<>());
+            }
+//            ArrayList<Rectangle> shapeList = new ArrayList<>();
+//            Map<Integer,Rectangle> recMap = new HashMap<>();
+
+            /**
+             * links: ClickablePanel's links, used to create hyperlink
+             * targetPathList: ClickablePanel's links, used to create hyperlink ...
+             */
+            ArrayList<HyperLink> links = new ArrayList<>();
+            ArrayList<String> targetPathList = new ArrayList<>();
+            ArrayList<String> targetJsonPathList = new ArrayList<>();
+            ArrayList<Integer> targetFrameList = new ArrayList<>();
+            for (int i = 0; i < read.getLinkList().length; i++){ //loop all link in links, i: link's index
+
+                String linkName =  read.getLinkList()[i].linkName;
+                String oriPath =  read.getLinkList()[i].oriPath;
+                int oriFrame = read.getLinkList()[i].oriFrame;
+                int targetFrame = read.getLinkList()[i].targetFrame;
+                String targetPath = read.getLinkList()[i].targetPath;
+                String targetJsonPath = read.getLinkList()[i].targetJsonPath;
+                int linkColor = read.getLinkList()[i].linkColor;
+//                HyperLink link = read.getLinkList()[];
+//                HyperLink(String linkName, String oriPath, String targetPath ,int targetFrame,int oriFrame,Map<Integer,Shape> linkShape, int linkColor ){
+
+                targetJsonPathList.add(targetJsonPath);
+                targetPathList.add(targetPath);
+                targetFrameList.add(targetFrame);
+
+//                String linkName = read.getLinkList()[i].linkName;
+                Map<Integer, Rectangle> linkShape = read.getLinkList()[i].linkShape;//link i's shape in each frame
+                Map<Integer,Shape> linkShape_s = new HashMap<>();//used to create hyperlink in ClickablePanel
+
+                for( int j : linkShape.keySet()){//loop all shape in a link, j: shape's index and frame
+                    Rectangle rec = linkShape.get(j);
+                    linkShape_s.put(j,rec);
+//                    System.out.println("put rec into linkShape_s, frame index = "+j+",linkShape_s.get("+j+"):"+linkShape_s.get(j));
+                    shapeListMap.get(j).add(rec);
+                }
+                System.out.println("after put rec into each linkShape_s and shapeListMap loop, linkShape_s.size()"+ linkShape_s.size());
+                HyperLink link = new HyperLink(linkName,oriPath,targetPath,targetFrame,oriFrame,linkShape_s,linkColor);
+                link.targetJsonPath = targetJsonPath;
+                links.add(link);
+            }
+
+            video_area.links = links;
+            video_area.shapeListMap = shapeListMap;// each frame has list of shapes, used to draw more than one box in a frame
+            video_area.targetFrameList = targetFrameList;
+            video_area.targetJsonPathList = targetJsonPathList;
+            video_area.targetPathList = targetPathList;
+//            int fRangeStart = 100;
+//            int fRangeEnd = 200;
+//            video_area.link = loadLinkData(fRangeStart,fRangeEnd);
+//            video_area.loadLink(fRangeStart,fRangeEnd);//fake link
 //            video_ori.shapes.clear();
             jb_play.setEnabled (true);
 //            jb_stop.setEnabled (true);
         }
 
         // TODO : Reload MetaData Files
-        // TODO : Reset Secondary Video Panel
     }
+
+//    public HyperLink loadLinkData(int startFrame, int endFrame){
+//        HyperLink link;
+//
+//
+//        // a link has one box in a frame
+//        Map<Integer,Shape> linkShape = new HashMap<>();// this should read from file saved by authoring, manual create here
+//        for(int i=50; i < 150; i++){
+//            int testOffset = (i-startFrame);
+//            linkShape.put(100,video_area.makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
+//        }
+//
+//        Map<Integer,Shape> linkShape2 = new HashMap<>();// this should read from file saved by authoring, manual create here
+//        for(int i=100; i < 250; i++){
+//            int testOffset = (i-startFrame);
+//            linkShape.put(100,video_area.makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
+//        }
+//        ArrayList<Map<Integer,Shape>> linkShapeList = new ArrayList<>();
+//        linkShapeList.add(linkShape);
+//        linkShapeList.add(linkShape2);
+//
+//        Map<Integer,ArrayList<Shape>> shapeMap = new HashMap<>();
+//        for(int i=0; i < 8999; i++){
+//            for(int j=0; j < linkShapeList.size(); j++){
+//                if (linkShapeList.get(j).get(i)!=null){
+//
+//                }
+//            }
+//
+//            ArrayList<Shape> shapes = new ArrayList<>();
+//            if (i>=startFrame && i<=startFrame+endFrame){
+//                int testOffset = (i-startFrame);
+//                shapes =
+////                        .add(makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
+//                shapeMap.put(i,shapes);
+//            }
+//        }
+//        System.out.println("loadLink():"+shapeMap.size());
+//        link = new HyperLink("testlink","/Users/yze/USCOne","/Users/yze/USCTwo",200,shapeMap,Color.green);
+//        return link;
+//    }
 
 
     public static void main(String[] agrs)

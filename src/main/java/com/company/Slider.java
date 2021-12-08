@@ -19,11 +19,11 @@ class Slider extends JSlider implements ChangeListener {
     private int currentFrame;
     private Map<Integer,drawDemo> video_ori_map;
 
-    Slider(JLabel status, String format, ArrayList<File> video, Map<Integer,drawDemo>video_ori_map) {
+    Slider(JLabel status, String format, ArrayList<File> video, Map<Integer,drawDemo>$video_ori_map) {
         super();
         this.status = status;
         this.format = format;
-        this.video_ori_map = video_ori_map;
+        this.video_ori_map = $video_ori_map;
         reset(video);
         addChangeListener(this);
     }
@@ -31,6 +31,12 @@ class Slider extends JSlider implements ChangeListener {
     public void forward() {
         if (isEnabled() && getMaximum() > getValue()) {
             setValue(getValue() + 1);
+        }
+    }
+
+    public void jumpTo(int loc) {
+        if (isEnabled() && getMaximum() > getValue()) {
+            setValue(loc);
         }
     }
 
@@ -84,9 +90,15 @@ class Slider extends JSlider implements ChangeListener {
              }
             canvas.shapes = temp_video_ori.shapes;
             canvas.setIcon(new ImageIcon(newImage));
+            System.out.println("before put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
+//            System.out.println("before put, video_ori_map shapae isEmpty:"+video_ori_map.get(currentFrame).shapes.isEmpty());
+//            System.out.println("before put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
+
             video_ori_map.put(currentFrame,temp_video_ori);
-            
-            System.out.println("after put, video_ori_map shapae size:"+video_ori_map.get(currentFrame).shapes.size()+", the map size: "+video_ori_map.size());
+
+            //video_ori_map.get(currentFrame).shapes is[], when first
+            System.out.println("after put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
+            System.out.println("after put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
 
             canvas.repaint();
             System.out.println("--------- slider change-end--------");

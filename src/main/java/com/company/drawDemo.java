@@ -115,6 +115,18 @@ public class drawDemo extends JLabel {
             repaint();
             x = y = x2 = y2 = 0;
         }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            super.mouseClicked(e);
+            for (Shape s : shapes) {
+                if (s.contains(e.getPoint())) {//check if mouse is clicked within shape
+                    //we can either just print out the object class name
+                    System.out.println("Clicked a " + s.getClass().getName());
+                }
+            }
+        }
+
     }
 
     public void paintComponent(Graphics g) {
