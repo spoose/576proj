@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 class Slider_sec extends JSlider implements ChangeListener {
 
     private JLabel canvas;

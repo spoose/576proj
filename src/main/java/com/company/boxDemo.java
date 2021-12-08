@@ -10,6 +10,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -88,7 +89,7 @@ public class boxDemo extends JFrame {
     JPanel panel3 = new JPanel(); //bottom right
     JPanel panel3_control_box = new JPanel(); // slider
     JButton jb_prev_p3 = new JButton("<");
-    Slider_sec slider_p3;
+    Slider slider_p3;
     JButton jb_next_p3 = new JButton(">");
     JPanel panel3_control_box2 = new JPanel();// import & stop
     JButton jb_import_sec = new JButton("\uDBC0\uDE05");
@@ -271,8 +272,39 @@ public class boxDemo extends JFrame {
         video_ori_map_sec = new HashMap<>();
 
         status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video, video_ori_map);
-        slider_p1.setCanvas(video_ori);
+        slider_p1 = new Slider(status, primary_video, video_ori_map);
+        slider_p1.addChangeListener(e -> {
+            System.out.println(" ");
+            System.out.println("--------- slider change---------");
+            currentFrame = ((JSlider)e.getSource()).getValue();
+            status.setText("Value of the slider is(current frame): " + currentFrame);
+            // status.setText(String.format(format, getValue() + 1));
+            if (video_ori != null) {
+                BufferedImage newImage = ImageReader.getInstance().BImgFromFile(primary_video.get(currentFrame));
+                drawDemo temp_video_ori = new drawDemo();
+                int size = video_ori_map.size();
+                if (video_ori_map.containsKey(currentFrame)){
+                    System.out.println("video_ori_map contains:"+currentFrame+"'s frame"+", the map size: "+size);
+                    // if(!video_ori_map.get(currentFrame).shapes.isEmpty()){
+                    temp_video_ori = video_ori_map.get(currentFrame);
+                    // }
+                }
+                video_ori.shapes = temp_video_ori.shapes;
+                video_ori.setIcon(new ImageIcon(newImage));
+                System.out.println("before put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
+//            System.out.println("before put, video_ori_map shapae isEmpty:"+video_ori_map.get(currentFrame).shapes.isEmpty());
+//            System.out.println("before put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
+
+                video_ori_map.put(currentFrame,temp_video_ori);
+
+                //video_ori_map.get(currentFrame).shapes is[], when first
+                System.out.println("after put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
+                System.out.println("after put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
+
+                System.out.println("--------- slider change-end--------");
+            }
+        });
+
         currentFrame = slider_p1.getCurrentFrame();
 
         jb_prev.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -303,8 +335,28 @@ public class boxDemo extends JFrame {
         jbDectAnchor2.addActionListener(new jbDectAnchorListener2());//detect function: set last anchor
         jbDetect.addActionListener(new jbDetectListener());//detect function: detect between two anchors
 
-        jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
-        jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
+        jb_import_ori.addActionListener(new FileSelector("Select primary video", boxDemo.this) {
+            @Override
+            void onFileSelected(File selectedFile) {
+                jbDectAnchor.setEnabled(true);
+                jb_redraw.setEnabled(true);
+                System.out.println("-------------loadPrimaryVideo----------");
+                primary_video_path = selectedFile.getPath();
+                current_video_name = selectedFile.getName();
+                loadPrimaryVideo(selectedFile.getPath());
+            }
+        });
+
+        jb_import_sec.addActionListener(new FileSelector("Select secondary video", boxDemo.this) {
+            @Override
+            void onFileSelected(File selectedFile) {
+                System.out.println("-------------loadSecondVideo------------");
+                secondary_video_path = selectedFile.getPath();
+                target_video_name = selectedFile.getName();
+                loadSecondaryVideo(selectedFile.getPath());
+            }
+        });
+
         jb_redraw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -368,8 +420,15 @@ public class boxDemo extends JFrame {
 
         JLabel status2 = new JLabel("Import a Video to Start!", JLabel.CENTER);
         status2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        slider_p3 = new Slider_sec(status2, "Value of the slider is: %d", secondary_video, video_ori_map_sec);
-        slider_p3.setCanvas(video_sec);
+        slider_p3 = new Slider(status2, secondary_video, video_ori_map_sec);
+        slider_p3.addChangeListener(e -> {
+            currentFrame = ((JSlider)e.getSource()).getValue();
+            status2.setText("Value of the slider is(current frame): " + currentFrame);
+            if (video_sec != null) {
+                BufferedImage newImage = ImageReader.getInstance().BImgFromFile(secondary_video.get(currentFrame));
+                video_sec.setIcon(new ImageIcon(newImage));
+            }
+        });
         currentFrame_sec = slider_p3.getCurrentFrame();
 
         jb_prev_p3.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -618,48 +677,12 @@ public class boxDemo extends JFrame {
         }
     }
 
-    private class btnImportListener implements ActionListener {
-
-        private final String title;
-        private final Component parent;
-        private final boolean isPrimary;
-
-        btnImportListener(String title, Component parent, boolean isPrimary) {
-            this.title = title;
-            this.parent = parent;
-            this.isPrimary = isPrimary;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setDialogTitle(title);
-            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
-                jbDectAnchor.setEnabled(true);
-                jb_redraw.setEnabled(true);
-                if (isPrimary) {
-                    System.out.println("-------------loadPrimaryVideo----------");
-                    primary_video_path = fileChooser.getSelectedFile().getPath();
-                    current_video_name = fileChooser.getSelectedFile().getName();
-                    loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
-                } else {
-                    System.out.println("-------------loadSecondVideo----------: "+fileChooser.getSelectedFile().getPath());
-                    secondary_video_path = fileChooser.getSelectedFile().getPath();
-                    target_video_name = fileChooser.getSelectedFile().getName();
-                    loadSecondaryVideo(fileChooser.getSelectedFile().getPath());
-                }
-            }
-        }
-    }
-
     private void loadPrimaryVideo(String path) {
         ImageReader reader = ImageReader.getInstance();
         primary_video = reader.FolderConfig(path);
         if (!primary_video.isEmpty()) {
             imported = true;
             slider_p1.reset(primary_video);
-            video_ori.setIcon(new ImageIcon(reader.BImgFromFile(primary_video.get(0))));
             video_ori.shapes.clear();
 
             pendingLink = new HyperLink();
@@ -687,7 +710,6 @@ public class boxDemo extends JFrame {
         secondary_video = reader.FolderConfig(path);
         if (!secondary_video.isEmpty()) {
             slider_p3.reset(secondary_video);
-            video_sec.setIcon(new ImageIcon(reader.BImgFromFile(secondary_video.get(0))));
             jb_link.setEnabled(true);
         }
     }
