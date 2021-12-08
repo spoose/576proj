@@ -61,7 +61,7 @@ public class WavePlayer extends AbstractPlayer<BufferedInputStream> {
 
     @Override
     void peek(long milliseconds) {
-        if (audioClip != null) {
+        if (audioClip != null && audioClip.isOpen()) {
             audioClip.setMicrosecondPosition(milliseconds * 1000);
         }
     }

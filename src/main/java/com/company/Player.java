@@ -89,6 +89,11 @@ public class Player extends JFrame {
                 video_area.setIcon(new ImageIcon(newImage));
             }
         });
+        slider_p1.setManualChangeListener(() -> {
+            audioPlayer.peek(frameToMilsec());
+            timeStamp = System.currentTimeMillis();
+        });
+
         currentFrame = slider_p1.getCurrentFrame();
 
         audioPlayer = new WavePlayer(null);    // create a new WavePlayer without self-control
@@ -198,7 +203,8 @@ public class Player extends JFrame {
                 public void run() {
                     // TODO : Reload MetaData Files
                     System.out.println("new thread before while:"+Thread.currentThread().getName());
-
+                    audioPlayer.peek(frameToMilsec());
+                    audioPlayer.play();
                     timeStamp =  System.currentTimeMillis();
                     while(videoPlayed){
                         currentFrame = slider_p1.getCurrentFrame();
@@ -244,7 +250,7 @@ public class Player extends JFrame {
         if (!imported || currentFrame < 1) {
             return 0;
         }
-        return (currentFrame * 33) + ((long)(currentFrame / 3) + 1);
+        return (currentFrame * 33L) + ((long)(currentFrame / 3) + 1);
     }
 
     private class btnStopListener implements ActionListener {
@@ -252,6 +258,7 @@ public class Player extends JFrame {
         public void actionPerformed(ActionEvent e) {
             currentFrame = slider_p1.getCurrentFrame();
             videoPlayed = false;
+            audioPlayer.pause();
 
             try {
                 System.out.println("btnStopListener before sleep: "+Thread.currentThread().getName());
@@ -269,8 +276,11 @@ public class Player extends JFrame {
 
     private class btnPrevListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            slider_p1.back();
-//            currentFrame = slider_p1.getCurrentFrame();
+            if (slider_p1.getValue() > slider_p1.getMinimum()) {
+                slider_p1.back();
+                audioPlayer.peek(frameToMilsec());
+                timeStamp = System.currentTimeMillis();
+            }
         }
     }
 
@@ -287,8 +297,11 @@ public class Player extends JFrame {
 //                video_ori_map.put(0,first_frame_primary_video);
 //                first_flag = false;
 //            }
-
-            slider_p1.forward();
+            if (slider_p1.getValue() < slider_p1.getMaximum()) {
+                slider_p1.forward();
+                audioPlayer.peek(frameToMilsec());
+                timeStamp = System.currentTimeMillis();
+            }
 //            currentFrame = slider_p1.getCurrentFrame();
 //            System.out.println("btnNext() currentFrame is:"+currentFrame);
         }
@@ -381,7 +394,6 @@ public class Player extends JFrame {
 //            jb_stop.setEnabled (true);
 
             audioPlayer.open(reader.BWavFromFile(imgPath));
-            audioPlayer.play();
         }
 
         // TODO : Reload MetaData Files
@@ -427,7 +439,6 @@ public class Player extends JFrame {
 //        link = new HyperLink("testlink","/Users/yze/USCOne","/Users/yze/USCTwo",200,shapeMap,Color.green);
 //        return link;
 //    }
-
 
     public static void main(String[] agrs)
     {
