@@ -5,22 +5,18 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Map;
 
 class Slider extends JSlider {
 
     private final JLabel status;
-    private ArrayList<File> data;
-
-    private int currentFrame;
-    private Map<Integer,drawDemo> video_ori_map;
+    private final String format;
 
     private ManualChangeListener listener;
 
-    Slider(JLabel status, ArrayList<File> video, Map<Integer,drawDemo> video_ori_map) {
+    Slider(JLabel status, String format, ArrayList<File> video) {
         super();
+        this.format = format;
         this.status = status;
-        this.video_ori_map =  video_ori_map;
         reset(video);
         addMouseListener(new MouseListener() {
             @Override
@@ -34,6 +30,12 @@ class Slider extends JSlider {
             public void mouseEntered(MouseEvent e) {}
             public void mouseExited(MouseEvent e) {}
         });
+    }
+
+    @Override
+    public void setValue(int n) {
+        super.setValue(n);
+        status.setText(String.format(format, getValue()));
     }
 
     public void forward() {
@@ -55,13 +57,12 @@ class Slider extends JSlider {
     }
 
     public void reset(ArrayList<File> video) {
-        this.data = video;
-        if (data == null || data.isEmpty()) {
+        if (video == null || video.isEmpty()) {
             setMaximum(0);
             setEnabled(false);
         }
         else {
-            setMaximum(data.size() - 1);
+            setMaximum(video.size() - 1);
             setEnabled(true);
             setValue(0);
         }
@@ -71,7 +72,7 @@ class Slider extends JSlider {
     }
 
     public int getCurrentFrame() {
-        return currentFrame;
+        return getValue();
     }
 
     public void setManualChangeListener(ManualChangeListener listener) {

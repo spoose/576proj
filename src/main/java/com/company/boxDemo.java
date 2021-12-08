@@ -272,12 +272,11 @@ public class boxDemo extends JFrame {
         video_ori_map_sec = new HashMap<>();
 
         status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider(status, primary_video, video_ori_map);
+        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video);
         slider_p1.addChangeListener(e -> {
             System.out.println(" ");
             System.out.println("--------- slider change---------");
             currentFrame = ((JSlider)e.getSource()).getValue();
-            status.setText("Value of the slider is(current frame): " + currentFrame);
             // status.setText(String.format(format, getValue() + 1));
             if (video_ori != null) {
                 BufferedImage newImage = ImageReader.getInstance().BImgFromFile(primary_video.get(currentFrame));
@@ -335,7 +334,8 @@ public class boxDemo extends JFrame {
         jbDectAnchor2.addActionListener(new jbDectAnchorListener2());//detect function: set last anchor
         jbDetect.addActionListener(new jbDetectListener());//detect function: detect between two anchors
 
-        jb_import_ori.addActionListener(new FileSelector("Select primary video", boxDemo.this) {
+        jb_import_ori.addActionListener(new FileSelector("Select primary video", boxDemo.this,
+                JFileChooser.DIRECTORIES_ONLY) {
             @Override
             void onFileSelected(File selectedFile) {
                 jbDectAnchor.setEnabled(true);
@@ -347,7 +347,8 @@ public class boxDemo extends JFrame {
             }
         });
 
-        jb_import_sec.addActionListener(new FileSelector("Select secondary video", boxDemo.this) {
+        jb_import_sec.addActionListener(new FileSelector("Select secondary video", boxDemo.this,
+                JFileChooser.DIRECTORIES_ONLY) {
             @Override
             void onFileSelected(File selectedFile) {
                 System.out.println("-------------loadSecondVideo------------");
@@ -420,10 +421,9 @@ public class boxDemo extends JFrame {
 
         JLabel status2 = new JLabel("Import a Video to Start!", JLabel.CENTER);
         status2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        slider_p3 = new Slider(status2, secondary_video, video_ori_map_sec);
+        slider_p3 = new Slider(status2, "Value of the slider is: %d", secondary_video);
         slider_p3.addChangeListener(e -> {
             currentFrame = ((JSlider)e.getSource()).getValue();
-            status2.setText("Value of the slider is(current frame): " + currentFrame);
             if (video_sec != null) {
                 BufferedImage newImage = ImageReader.getInstance().BImgFromFile(secondary_video.get(currentFrame));
                 video_sec.setIcon(new ImageIcon(newImage));

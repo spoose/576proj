@@ -1,17 +1,14 @@
 package com.company;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.awt.geom.Rectangle2D;
 
 public class Player extends JFrame {
 
@@ -40,7 +37,7 @@ public class Player extends JFrame {
     JPanel panel1 = new JPanel(); //bottom-left
     JPanel panel1_control_box = new JPanel(); // slider
     JButton jb_prev = new JButton("<");
-    Slider_sec slider_p1;
+    Slider slider_p1;
     JButton jb_next = new JButton(">");
     JPanel panel1_control_box2 = new JPanel();// import & play & stop
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
@@ -80,9 +77,15 @@ public class Player extends JFrame {
         video_ori_map_sec = new HashMap<>();
 
         JLabel status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider_sec(status, "Value of the slider is: %d", primary_video,video_ori_map);
+        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video);
         slider_p1.setPreferredSize(new Dimension(380,20));
-        slider_p1.setCanvas(video_area);
+        slider_p1.addChangeListener(e -> {
+            currentFrame = ((JSlider)e.getSource()).getValue();
+            if (video_area != null) {
+                BufferedImage newImage = ImageReader.getInstance().BImgFromFile(primary_video.get(currentFrame));
+                video_area.setIcon(new ImageIcon(newImage));
+            }
+        });
         currentFrame = slider_p1.getCurrentFrame();
 
         jb_import_ori.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -106,7 +109,15 @@ public class Player extends JFrame {
         panel1_control_box2.add(jb_play);
         panel1_control_box2.add(jb_stop);
         panel1_control_box2.setBackground(Color.PINK);
-        jb_import_ori.addActionListener(new Player.btnImportListener("Select primary video", Player.this, true));
+        jb_import_ori.addActionListener(new FileSelector("Select primary video", Player.this,
+                JFileChooser.FILES_ONLY) {
+            @Override
+            void onFileSelected(File selectedFile) {
+                String jsonPath = selectedFile.getPath();
+                String imgPath = getImgPath(jsonPath,0);//get oriPath, index doesn't matter
+                loadPrimaryVideo(imgPath,jsonPath);
+            }
+        });
 
         BoxLayout layout1 = new BoxLayout(panel1, BoxLayout.Y_AXIS);
         panel1.setLayout(layout1);
@@ -177,7 +188,7 @@ public class Player extends JFrame {
 
             timeStamp = System.currentTimeMillis();
 
-             video_thread = new Thread(new Runnable() {
+            video_thread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     // TODO : Reload MetaData Files
@@ -201,11 +212,11 @@ public class Player extends JFrame {
                             timeStamp = System.currentTimeMillis();
                         }
                         catch (InterruptedException ex) {
-                                ex.printStackTrace();
+                            ex.printStackTrace();
                         }
                         slider_p1.forward();
 
-                        }//end while
+                    }//end while
 //                    for (int i =0 ; i < 300 ; i++){//300 frame should be 10s
 //                        try{
 //                            Thread.sleep(31);
@@ -278,33 +289,6 @@ public class Player extends JFrame {
         }
     }
 
-    private class btnImportListener implements ActionListener {
-
-        private final String title;
-        private final Component parent;
-        private final boolean isPrimary;
-
-        btnImportListener(String title, Component parent, boolean isPrimary) {
-            this.title = title;
-            this.parent = parent;
-            this.isPrimary = isPrimary;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fileChooser.setDialogTitle(title);
-            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
-//                jbDectAnchor.setEnabled (true);
-//                jb_redraw.setEnabled (true);
-                String jsonPath = fileChooser.getSelectedFile().getPath();
-                String imgPath = getImgPath(jsonPath,0);//get oriPath, index doesn't matter
-                loadPrimaryVideo(imgPath,jsonPath);
-//                if (isPrimary) loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
-            }
-        }
-    }
     public String getImgPath(String jsonPath, int linkIndex) {
         GasonRead read = new GasonRead(jsonPath);
         String imgPath = read.getLinkList()[linkIndex].oriPath;
