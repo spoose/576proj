@@ -317,9 +317,7 @@ public class Player extends JFrame {
         ImageReader reader = ImageReader.getInstance();
         primary_video = reader.FolderConfig(imgPath);
         if (!primary_video.isEmpty()) {
-            imported = true;
             slider_p1.reset(primary_video);
-            video_area.setIcon(new ImageIcon(reader.BImgFromFile(primary_video.get(0))));
 
             GasonRead read = new GasonRead(jsonPath);
             System.out.println("reaad:" + read.toString());
@@ -394,6 +392,10 @@ public class Player extends JFrame {
 //            jb_stop.setEnabled (true);
 
             audioPlayer.open(reader.BWavFromFile(imgPath));
+            if (imported) {
+                audioPlayer.play();
+            }
+            imported = true;
         }
 
         // TODO : Reload MetaData Files
