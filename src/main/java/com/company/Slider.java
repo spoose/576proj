@@ -12,6 +12,7 @@ import java.util.Map;
 class Slider extends JSlider implements ChangeListener {
 
     private drawDemo canvas;
+     boxDemo parent;
     private final JLabel status;
     private final String format;
     private ArrayList<File> data;
@@ -76,7 +77,9 @@ class Slider extends JSlider implements ChangeListener {
         System.out.println(" ");
         System.out.println("--------- slider change---------");
         currentFrame = ((JSlider)e.getSource()).getValue();
+        parent.currentFrame =  ((JSlider)e.getSource()).getValue();
         status.setText("Value of the slider is(current frame): " + currentFrame);
+        System.out.println("Value of the slider is(current frame): " + currentFrame);
         // status.setText(String.format(format, getValue() + 1));
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
@@ -88,20 +91,32 @@ class Slider extends JSlider implements ChangeListener {
                     temp_video_ori = video_ori_map.get(currentFrame);
                 // }
              }
+
             canvas.shapes = temp_video_ori.shapes;
             canvas.setIcon(new ImageIcon(newImage));
-            System.out.println("before put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
-//            System.out.println("before put, video_ori_map shapae isEmpty:"+video_ori_map.get(currentFrame).shapes.isEmpty());
-//            System.out.println("before put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
+
+            if (video_ori_map.get(currentFrame)!=null){
+                System.out.println("before video_ori_map.put(currentFrame,temp_video_ori) the map size:"+video_ori_map.get(currentFrame).shapes);
+            }
+            System.out.println("before video_ori_map.put(currentFrame,temp_video_ori) the map size: "+video_ori_map.size());
 
             video_ori_map.put(currentFrame,temp_video_ori);
 
             //video_ori_map.get(currentFrame).shapes is[], when first
-            System.out.println("after put, video_ori_map.get(currentFrame):"+video_ori_map.get(currentFrame)+", the map size: "+video_ori_map.size());
+            System.out.println("after put, video_ori_map.get(currentFrame): the map size: "+video_ori_map.size());
             System.out.println("after put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
 
+//            if (!video_ori_map.get(currentFrame).shapes.isEmpty()){
+//                parent.boxX.setText(video_ori_map.get(currentFrame).shapes.get(0).getBounds2D().getX()+"");
+//            }else{
+//                parent.boxX.setText("");
+//            }
+
             canvas.repaint();
-            System.out.println("--------- slider change-end--------");
         }
+        else {
+            System.out.println("--------- null canvas--------");
+        }
+        System.out.println("--------- slider change-end--------");
     }
 }

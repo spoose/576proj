@@ -40,7 +40,7 @@ public class Player extends JFrame {
     JPanel panel1 = new JPanel(); //bottom-left
     JPanel panel1_control_box = new JPanel(); // slider
     JButton jb_prev = new JButton("<");
-    Slider_sec slider_p1;
+    Slider_click slider_p1;
     JButton jb_next = new JButton(">");
     JPanel panel1_control_box2 = new JPanel();// import & play & stop
     JButton jb_import_ori = new JButton("\uDBC0\uDE05 Import");
@@ -80,7 +80,7 @@ public class Player extends JFrame {
         video_ori_map_sec = new HashMap<>();
 
         JLabel status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider_sec(status, "Value of the slider is: %d", primary_video,video_ori_map);
+        slider_p1 = new Slider_click(status, "Value of the slider is: %d", primary_video,video_ori_map);
         slider_p1.setPreferredSize(new Dimension(380,20));
         slider_p1.setCanvas(video_area);
         currentFrame = slider_p1.getCurrentFrame();
@@ -346,7 +346,10 @@ public class Player extends JFrame {
             ArrayList<String> targetPathList = new ArrayList<>();
             ArrayList<String> targetJsonPathList = new ArrayList<>();
             ArrayList<Integer> targetFrameList = new ArrayList<>();
+            Map<Integer, ArrayList<Integer>> frameColorsMap = new HashMap<>();
+
             for (int i = 0; i < read.getLinkList().length; i++){ //loop all link in links, i: link's index
+                System.out.println("begin to read link"+i+"'s data");
 
                 String linkName =  read.getLinkList()[i].linkName;
                 String oriPath =  read.getLinkList()[i].oriPath;
@@ -363,21 +366,37 @@ public class Player extends JFrame {
                 targetFrameList.add(targetFrame);
 
 //                String linkName = read.getLinkList()[i].linkName;
-                Map<Integer, Rectangle> linkShape = read.getLinkList()[i].linkShape;//link i's shape in each frame
-                Map<Integer,Shape> linkShape_s = new HashMap<>();//used to create hyperlink in ClickablePanel
+//                ArrayList<HyperLink> frameLinkList = new ArrayList<>();
 
-                for( int j : linkShape.keySet()){//loop all shape in a link, j: shape's index and frame
-                    Rectangle rec = linkShape.get(j);
-                    linkShape_s.put(j,rec);
-//                    System.out.println("put rec into linkShape_s, frame index = "+j+",linkShape_s.get("+j+"):"+linkShape_s.get(j));
-                    shapeListMap.get(j).add(rec);
+
+                Map<Integer, Rectangle> linkShape = read.getLinkList()[i].linkShape;//link i's shape in each frame
+                if (linkShape == null){
+                    JOptionPane.showMessageDialog(null,"no linkShape data");
                 }
-                System.out.println("after put rec into each linkShape_s and shapeListMap loop, linkShape_s.size()"+ linkShape_s.size());
-                HyperLink link = new HyperLink(linkName,oriPath,targetPath,targetFrame,oriFrame,linkShape_s,linkColor);
-                link.targetJsonPath = targetJsonPath;
-                links.add(link);
+                else {
+                    Map<Integer,Shape> linkShape_s = new HashMap<>();//used to create hyperlink in ClickablePanel
+
+                    for( int j : linkShape.keySet()){//loop all shape in a link, j: shape's index and frame
+                        ArrayList<Integer> colors = new ArrayList<>();
+                        if (frameColorsMap.get(j)!=null){
+                            colors = frameColorsMap.get(j);
+                        }
+                        colors.add(linkColor);
+                        frameColorsMap.put(j,colors);
+
+                        Rectangle rec = linkShape.get(j);
+                        linkShape_s.put(j,rec);
+//                    System.out.println("put rec into linkShape_s, frame index = "+j+",linkShape_s.get("+j+"):"+linkShape_s.get(j));
+                        shapeListMap.get(j).add(rec);
+                    }
+                    System.out.println("after put rec into each linkShape_s and shapeListMap loop, linkShape_s.size()"+ linkShape_s.size());
+                    HyperLink link = new HyperLink(linkName,oriPath,targetPath,targetFrame,oriFrame,linkShape_s,linkColor);
+                    link.targetJsonPath = targetJsonPath;
+                    links.add(link);
+                }
             }
 
+            video_area.frameColorsMap = frameColorsMap;
             video_area.links = links;
             video_area.shapeListMap = shapeListMap;// each frame has list of shapes, used to draw more than one box in a frame
             video_area.targetFrameList = targetFrameList;
