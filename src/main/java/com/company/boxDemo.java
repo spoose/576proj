@@ -10,6 +10,7 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -19,6 +20,16 @@ import java.util.Map;
 import java.awt.geom.Rectangle2D;
 
 public class boxDemo extends JFrame {
+
+    Map<Integer, ArrayList<Integer>> frameColorsMap = new HashMap<>();
+    int colorIndex=0;
+    ArrayList<Color> colors = new ArrayList<>(){{
+        add(Color.BLUE);
+        add(Color.green);
+        add(Color.CYAN);
+        add(Color.ORANGE);
+        add(Color.YELLOW);
+    }};
 
     //    drawDemo video_ori_label;
     boolean imported = false;
@@ -51,10 +62,12 @@ public class boxDemo extends JFrame {
     JTextField boxY = new JTextField();
     JTextField boxW = new JTextField();
     JTextField boxH = new JTextField();
-    JButton jb_changeX = new JButton("change X");
-    JButton jb_changeY = new JButton("change Y");
-    JButton jb_changeWidth  = new JButton("change Width");
-    JButton jb_changeHeight  = new JButton("change Height");
+    JButton jb_edit = new JButton("Edit Box");
+    JButton jb_change_box = new JButton("Change Now");
+    JLabel jl_boxX = new JLabel("Bounding Box: X");
+    JLabel jl_boxY = new JLabel("Bounding Box: Y");
+    JLabel jl_boxW = new JLabel("Width");
+    JLabel jl_boxH = new JLabel("Height");
 
 
     /**
@@ -88,7 +101,7 @@ public class boxDemo extends JFrame {
     JPanel panel3 = new JPanel(); //bottom right
     JPanel panel3_control_box = new JPanel(); // slider
     JButton jb_prev_p3 = new JButton("<");
-    Slider_sec slider_p3;
+    Slider slider_p3;
     JButton jb_next_p3 = new JButton(">");
     JPanel panel3_control_box2 = new JPanel();// import & stop
     JButton jb_import_sec = new JButton("\uDBC0\uDE05");
@@ -133,37 +146,48 @@ public class boxDemo extends JFrame {
 
         JPanel xPanel = new JPanel();
         xPanel.setLayout(new BoxLayout(xPanel, BoxLayout.X_AXIS));
+        xPanel.add(jl_boxX);
         xPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         xPanel.add(boxX);
-        xPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        xPanel.add(jb_changeX);
+        xPanel.add(Box.createRigidArea(new Dimension(60, 0)));
 
         JPanel yPanel = new JPanel();
         yPanel.setLayout(new BoxLayout(yPanel, BoxLayout.X_AXIS));
+        yPanel.add(jl_boxY);
         yPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         yPanel.add(boxY);
-        yPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        yPanel.add(jb_changeY);
+        yPanel.add(Box.createRigidArea(new Dimension(60, 0)));
+
+
 
         JPanel wPanel = new JPanel();
         wPanel.setLayout(new BoxLayout(wPanel, BoxLayout.X_AXIS));
+        wPanel.add(jl_boxW);
         wPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         wPanel.add(boxW);
-        wPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        wPanel.add(jb_changeWidth);
+        wPanel.add(Box.createRigidArea(new Dimension(60, 0)));
+
 
         JPanel hPanel = new JPanel();
         hPanel.setLayout(new BoxLayout(hPanel, BoxLayout.X_AXIS));
+        hPanel.add(jl_boxH);
         hPanel.add(Box.createRigidArea(new Dimension(20, 0)));
         hPanel.add(boxH);
-        hPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-        hPanel.add(jb_changeHeight);
+        hPanel.add(Box.createRigidArea(new Dimension(60, 0)));
+
+
+        JPanel editPanel = new JPanel();
+        editPanel.setLayout(new BoxLayout(editPanel, BoxLayout.X_AXIS));
+        editPanel.add(jb_edit);
+        editPanel.add(Box.createRigidArea(new Dimension(20, 0)));
+        editPanel.add(jb_change_box);
 
         panel_box_info.add(box_head);
         panel_box_info.add(xPanel);
         panel_box_info.add(yPanel);
         panel_box_info.add(wPanel);
         panel_box_info.add(hPanel);
+        panel_box_info.add(editPanel);
 
 //        panel_box_info.setBackground(Color.pink);
         panel_box_info.setPreferredSize(new Dimension(300, 150));
@@ -174,6 +198,55 @@ public class boxDemo extends JFrame {
         linkList = new JList(listModel);
         scrollPane.setViewportView(linkList);
 
+        jb_edit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                currentFrame = slider_p1.getCurrentFrame();
+                System.out.println("jb_edit: currentFrame: "+currentFrame);
+                if (video_ori_map.get(currentFrame) == null){
+//                    JOptionPane.showMessageDialog(null,"!");
+                    return;
+                }
+                if (!video_ori_map.get(currentFrame).shapes.isEmpty()){
+                    int index  = video_ori_map.get(currentFrame).shapes.size()-1;
+                    boxX.setText(video_ori_map.get(currentFrame).shapes.get(index).getBounds2D().getX()+"");
+                    boxY.setText(video_ori_map.get(currentFrame).shapes.get(index).getBounds2D().getY()+"");
+                    boxW.setText(video_ori_map.get(currentFrame).shapes.get(index).getBounds2D().getWidth()+"");
+                    boxH.setText(video_ori_map.get(currentFrame).shapes.get(index).getBounds2D().getHeight()+"");
+//                    boxX.setText(video_ori.shapes.get(video_ori.shapes.size()-1).getBounds2D().getX()+"");
+                }else{
+                    JOptionPane.showMessageDialog(null,"no box: video_ori_map.get(currentFrame).shapes.isEmpty()");
+                    boxX.setText("");
+                }
+            }
+        });
+
+        jb_change_box.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (video_ori_map.get(currentFrame) == null){
+                    JOptionPane.showMessageDialog(null,"no box chosen");
+                    return;
+                }
+                if (!video_ori_map.get(currentFrame).shapes.isEmpty()){
+                    int index  = video_ori_map.get(currentFrame).shapes.size()-1;
+                    double newX = Double.parseDouble(boxX.getText());
+                    double y =   Double.parseDouble(boxY.getText());
+                    double w =  Double.parseDouble(boxW.getText());
+                    double h =  Double.parseDouble(boxH.getText());
+//                    int y =  (int)video_ori_map.get(currentFrame).shapes.get(0).getBounds2D().getY();
+//                    int w = (int) video_ori_map.get(currentFrame).shapes.get(0).getBounds2D().getWidth();
+//                    int h = (int) video_ori_map.get(currentFrame).shapes.get(0).getBounds2D().getHeight();
+                    video_ori_map.get(currentFrame).shapes.remove(index);
+                    video_ori_map.get(currentFrame).shapes.add(index,makeRectangle((int)newX,(int)y,(int)(newX+w),(int)(y+h)));
+//                    video_ori_map.get(currentFrame).shapes.get(0).getBounds2D().setRect(newX,y,w,h);
+                    repaint();
+                }
+                else {
+                    JOptionPane.showMessageDialog(null,"video_ori_map.get(currentFrame).shapes.isEmpty()");
+                }
+            }
+        });
 
 //        ArrayList<String> listData = new ArrayList<>();
 //        String[] listData=new String[20];
@@ -188,9 +261,9 @@ public class boxDemo extends JFrame {
         linkList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 System.out.println("-------linkList valueChanged----------");
-                if(linkList.getSelectedIndex() ==-1){
+                if (linkList.getSelectedIndex() == -1) {
                     System.out.println("linkList.getSelectedIndex() ==-1");
-                    JOptionPane.showMessageDialog(null,"value change(because import new video), -1");
+                    JOptionPane.showMessageDialog(null, "value change(because import new video), -1");
                     linkLabel.setText("nothing");
                     return;
                 }
@@ -198,7 +271,7 @@ public class boxDemo extends JFrame {
                 linkLabel.setText("you select" + linkSelected + "," + linkList.getSelectedValue());
                 if (links.size() >= linkSelected + 1) {
                     System.out.println("ori frame is:" + links.get(linkSelected).oriFrame);
-                    linkLabel.setText("you select index of " + linkSelected + ", name:" + linkList.getSelectedValue() + "|| ori frame is:" + links.get(linkSelected).oriFrame+" target path: "+ links.get(linkSelected).targetPath);
+                    linkLabel.setText("you select index of " + linkSelected + ", name:" + linkList.getSelectedValue() + "|| ori frame is:" + links.get(linkSelected).oriFrame + " target path: " + links.get(linkSelected).targetPath);
                     slider_p1.jumpTo(links.get(linkSelected).oriFrame);
                     currentFrame = slider_p1.getCurrentFrame();
                 } else {
@@ -212,13 +285,13 @@ public class boxDemo extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String newName = JOptionPane.showInputDialog("Enter new name:");
                 System.out.println("jb_editLink newName: " + newName);
-                if(linkList.getSelectedIndex() ==-1){
+                if (linkList.getSelectedIndex() == -1) {
                     System.out.println("linkList.getSelectedIndex() ==-1");
                     JOptionPane.showInputDialog("linkList.getSelectedIndex() ==-1");
                     linkLabel.setText("nothing.");
                     return;
                 }
-                if (newName != null && !newName.isEmpty() ) {
+                if (newName != null && !newName.isEmpty()) {
                     int select = linkSelected;
                     System.out.println("jb_editLink linkSelected: " + select);
                     listModel.set(select, newName);
@@ -267,12 +340,47 @@ public class boxDemo extends JFrame {
          */
 
         video_ori = new drawDemo();
+        video_ori.parent = this;
         video_ori_map = new HashMap<>();
         video_ori_map_sec = new HashMap<>();
 
         status = new JLabel("Import a Video to Start!", JLabel.CENTER);
-        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video, video_ori_map);
-        slider_p1.setCanvas(video_ori);
+        slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video);
+        slider_p1.addChangeListener(e -> {
+            System.out.println(" ");
+            System.out.println("--------- slider change---------");
+            currentFrame = ((JSlider)e.getSource()).getValue();
+            video_ori.parent.currentFrame =  ((JSlider)e.getSource()).getValue();
+            if (video_ori != null) {
+                BufferedImage newImage = ImageReader.getInstance().BImgFromFile(primary_video.get(currentFrame));
+                drawDemo temp_video_ori = new drawDemo();
+                int size = video_ori_map.size();
+                if (video_ori_map.containsKey(currentFrame)){
+                    System.out.println("video_ori_map contains:"+currentFrame+"'s frame"+", the map size: "+size);
+                    // if(!video_ori_map.get(currentFrame).shapes.isEmpty()){
+                    temp_video_ori = video_ori_map.get(currentFrame);
+                    // }
+                }
+
+                video_ori.shapes = temp_video_ori.shapes;
+                video_ori.setIcon(new ImageIcon(newImage));
+
+                if (video_ori_map.get(currentFrame)!=null){
+                    System.out.println("before video_ori_map.put(currentFrame,temp_video_ori) the map size:"+video_ori_map.get(currentFrame).shapes);
+                }
+                System.out.println("before video_ori_map.put(currentFrame,temp_video_ori) the map size: "+video_ori_map.size());
+
+                video_ori_map.put(currentFrame,temp_video_ori);
+
+                //video_ori_map.get(currentFrame).shapes is[], when first
+                System.out.println("after put, video_ori_map.get(currentFrame): the map size: "+video_ori_map.size());
+                System.out.println("after put, video_ori_map shapae:"+video_ori_map.get(currentFrame).shapes);
+            }
+            else {
+                System.out.println("--------- null canvas--------");
+            }
+            System.out.println("--------- slider change-end--------");
+        });
         currentFrame = slider_p1.getCurrentFrame();
 
         jb_prev.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -303,16 +411,38 @@ public class boxDemo extends JFrame {
         jbDectAnchor2.addActionListener(new jbDectAnchorListener2());//detect function: set last anchor
         jbDetect.addActionListener(new jbDetectListener());//detect function: detect between two anchors
 
-        jb_import_ori.addActionListener(new btnImportListener("Select primary video", boxDemo.this, true));
-        jb_import_sec.addActionListener(new btnImportListener("Select secondary video", boxDemo.this, false));
+        jb_import_ori.addActionListener(new FileSelector("Select primary video", boxDemo.this,
+                JFileChooser.DIRECTORIES_ONLY) {
+            @Override
+            void onFileSelected(File selectedFile) {
+                jbDectAnchor.setEnabled(true);
+                jb_redraw.setEnabled(true);
+                System.out.println("-------------loadPrimaryVideo----------");
+                primary_video_path = selectedFile.getPath();
+                current_video_name = selectedFile.getName();
+                loadPrimaryVideo(selectedFile.getPath());
+            }
+        });
+
+        jb_import_sec.addActionListener(new FileSelector("Select secondary video", boxDemo.this,
+                JFileChooser.DIRECTORIES_ONLY) {
+            @Override
+            void onFileSelected(File selectedFile) {
+                System.out.println("-------------loadSecondVideo------------");
+                secondary_video_path = selectedFile.getPath();
+                target_video_name = selectedFile.getName();
+                loadSecondaryVideo(selectedFile.getPath());
+            }
+        });
+
         jb_redraw.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 for (Shape s : video_ori.shapes) {
                     System.out.println("clear():" + s.getBounds());
                 }
-                if (!video_ori.shapes.isEmpty()){
-                    video_ori.shapes.remove(video_ori.shapes.size()-1);
+                if (!video_ori.shapes.isEmpty()) {
+                    video_ori.shapes.remove(video_ori.shapes.size() - 1);
                 }
                 repaint();
             }
@@ -368,8 +498,14 @@ public class boxDemo extends JFrame {
 
         JLabel status2 = new JLabel("Import a Video to Start!", JLabel.CENTER);
         status2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        slider_p3 = new Slider_sec(status2, "Value of the slider is: %d", secondary_video, video_ori_map_sec);
-        slider_p3.setCanvas(video_sec);
+        slider_p3 = new Slider(status2, "Value of the slider is: %d", secondary_video);
+        slider_p3.addChangeListener(e -> {
+            currentFrame = ((JSlider)e.getSource()).getValue();
+            if (video_sec != null) {
+                BufferedImage newImage = ImageReader.getInstance().BImgFromFile(secondary_video.get(currentFrame));
+                video_sec.setIcon(new ImageIcon(newImage));
+            }
+        });
         currentFrame_sec = slider_p3.getCurrentFrame();
 
         jb_prev_p3.setFont(new Font("Dialog", Font.PLAIN, 20));
@@ -420,10 +556,11 @@ public class boxDemo extends JFrame {
             pendingLink.targetFrame = currentFrame_sec;
             pendingLink.targetPath = secondary_video_path;
             pendingLink.targetJsonPath = "/Users/yze/" + target_video_name + ".json";//?
+            pendingLink.linkColor = colors.get(links.size()).getRGB();
 
-            System.out.println("linkAnchorListen() link name:"+pendingLink.linkName);
+            System.out.println("linkAnchorListen() link name:" + pendingLink.linkName);
 //            pendingLink.oriFrame = currentFrame;
-            System.out.println("linkAnchorListen() pendingLink.targetPath:"+pendingLink.targetPath);
+            System.out.println("linkAnchorListen() pendingLink.targetPath:" + pendingLink.targetPath);
             System.out.println("linkAnchorListen() targetFrame:" + pendingLink.targetFrame);
             System.out.println("linkAnchorListen(): currentFrame_sec:" + currentFrame_sec);
 
@@ -454,7 +591,7 @@ public class boxDemo extends JFrame {
             try (
                     FileWriter writer = new FileWriter("/Users/yze/" + current_video_name + ".json")) {
                 gson.toJson(links, writer);
-                JOptionPane.showMessageDialog(null,"meta data saved: /Users/yze/" + current_video_name + ".json");
+                JOptionPane.showMessageDialog(null, "meta data saved: /Users/yze/" + current_video_name + ".json");
             } catch (
                     IOException ee) {
                 ee.printStackTrace();
@@ -463,6 +600,7 @@ public class boxDemo extends JFrame {
     }
 
     private class jbDectAnchorListener implements ActionListener {//first anchor set
+
         @Override
         public void actionPerformed(ActionEvent e) {
             currentFrame = slider_p1.getCurrentFrame();
@@ -479,6 +617,7 @@ public class boxDemo extends JFrame {
     }
 
     private class jbDectAnchorListener2 implements ActionListener {//last anchor set
+
         @Override
         public void actionPerformed(ActionEvent e) {
             currentFrame = slider_p1.getCurrentFrame();
@@ -496,12 +635,12 @@ public class boxDemo extends JFrame {
             int firstFrame = detectAnchorIndex;
             int lastFrame = detectAnchorIndex2;
             // int index = 0;
-            System.out.println("frame detect(): video_ori_map currentFrame:" + video_ori_map.get(currentFrame));
-            System.out.println("frame detect(): video_ori_map: lastFrame" + video_ori_map.get(lastFrame));
-            System.out.println("frame detect(): video_ori_map:" + video_ori_map.size());
             int index = video_ori_map.get(firstFrame).shapes.size() - 1; // last shape in shape-list
             int index2 = video_ori_map.get(lastFrame).shapes.size() - 1; // last shape in shape-list
-            System.out.println("frame detect(): first frame:" + firstFrame +", last frame: "+ lastFrame + ", index:" + index);
+            System.out.println("frame detect(): first frame:" + firstFrame + ", last frame: " + lastFrame + ", index:" + index);
+            System.out.println("frame detect(): video_ori_map:" + video_ori_map.size());
+            System.out.println("frame detect(): video_ori_map currentFrame shapes:" + video_ori_map.get(currentFrame).shapes);
+            System.out.println("frame detect(): video_ori_map: lastFrame shapes" + video_ori_map.get(lastFrame).shapes);
 
             /**
              * xFirst: top left x of first frame
@@ -540,19 +679,39 @@ public class boxDemo extends JFrame {
             Map<Integer, Shape> temLinkShape = new HashMap<>();
             pendingLink = new HyperLink(linkName, oriPath, targetPath, targetFrame, oriFrame, temLinkShape, Color.PINK.getRGB());
             pendingLink.linkShape = new HashMap<>();
+            pendingLink.linkShape.put(firstFrame,  video_ori_map.get(firstFrame).shapes.get(index));
+            pendingLink.linkShape.put(lastFrame,  video_ori_map.get(lastFrame).shapes.get(index2));
+            ArrayList<Integer> temp_colorsf = new ArrayList<>();
+            if (frameColorsMap.get(firstFrame)!=null){
+                temp_colorsf = frameColorsMap.get(firstFrame);
+            }
+            temp_colorsf.add(colors.get(colorIndex).getRGB());
+            frameColorsMap.put(firstFrame,temp_colorsf);
+
+            ArrayList<Integer> temp_colorsl = new ArrayList<>();
+            if (frameColorsMap.get(lastFrame)!=null){
+                temp_colorsl = frameColorsMap.get(lastFrame);
+            }
+            temp_colorsl.add(colors.get(colorIndex).getRGB());
+            frameColorsMap.put(lastFrame,temp_colorsl);
+
+
             for (int i = firstFrame + 1; i < lastFrame; i++) {
                 drawDemo tempItem = new drawDemo();
+
+//                video_ori.color = colors.get(links.size());
+
                 int x1 = (int) (xFirst + xChange * (i - firstFrame));
                 int y1 = (int) (yFirst + yChange * (i - firstFrame));
                 int x2 = (int) (x1 + firstWidth + widthChange * (i - firstFrame));
                 int y2 = (int) (y1 + firstHeight + heightChange * (i - firstFrame));
 
                 Shape temShape = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
-                Shape temShape2 = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
+//                Shape temShape2 = new Rectangle2D.Float(x1, y1, Math.abs(x1 - x2), Math.abs(y1 - y2));
                 // Shape temShape = new Rectangle2D.Float(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
                 System.out.println("i:" + i + ",frame detect(): temShape:" + temShape);
 
-                if (video_ori_map.get(i) == null) {
+                if (video_ori_map.get(i) == null) {//initialization
                     System.out.println("i:" + i + ",frame detect(): video_ori_map null");
                     video_ori_map.put(i, new drawDemo());
                 }
@@ -566,6 +725,13 @@ public class boxDemo extends JFrame {
                 System.out.println("---------frame detect(): put frame i:" + i + ",into pendingLink,temShape.toString():" + temShape.toString());
                 pendingLink.linkShape.put(i, temShape);
 
+                ArrayList<Integer> temp_colors = new ArrayList<>();
+                if (frameColorsMap.get(i)!=null){
+                    temp_colors = frameColorsMap.get(i);
+                }
+                temp_colors.add(colors.get(colorIndex).getRGB());
+                frameColorsMap.put(i,temp_colors);
+
 //                linkShape.put(i,temShape);
             }
             for (Shape s : video_ori_map.get(firstFrame).shapes) {
@@ -573,6 +739,7 @@ public class boxDemo extends JFrame {
             }
             jbDectAnchor2.setEnabled(false);
             jbDetect.setEnabled(false);
+            colorIndex ++;
         }
     }
 
@@ -618,48 +785,12 @@ public class boxDemo extends JFrame {
         }
     }
 
-    private class btnImportListener implements ActionListener {
-
-        private final String title;
-        private final Component parent;
-        private final boolean isPrimary;
-
-        btnImportListener(String title, Component parent, boolean isPrimary) {
-            this.title = title;
-            this.parent = parent;
-            this.isPrimary = isPrimary;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setDialogTitle(title);
-            if (JFileChooser.APPROVE_OPTION == fileChooser.showOpenDialog(parent)) {
-                jbDectAnchor.setEnabled(true);
-                jb_redraw.setEnabled(true);
-                if (isPrimary) {
-                    System.out.println("-------------loadPrimaryVideo----------");
-                    primary_video_path = fileChooser.getSelectedFile().getPath();
-                    current_video_name = fileChooser.getSelectedFile().getName();
-                    loadPrimaryVideo(fileChooser.getSelectedFile().getPath());
-                } else {
-                    System.out.println("-------------loadSecondVideo----------: "+fileChooser.getSelectedFile().getPath());
-                    secondary_video_path = fileChooser.getSelectedFile().getPath();
-                    target_video_name = fileChooser.getSelectedFile().getName();
-                    loadSecondaryVideo(fileChooser.getSelectedFile().getPath());
-                }
-            }
-        }
-    }
-
     private void loadPrimaryVideo(String path) {
         ImageReader reader = ImageReader.getInstance();
         primary_video = reader.FolderConfig(path);
         if (!primary_video.isEmpty()) {
             imported = true;
             slider_p1.reset(primary_video);
-            video_ori.setIcon(new ImageIcon(reader.BImgFromFile(primary_video.get(0))));
             video_ori.shapes.clear();
 
             pendingLink = new HyperLink();
@@ -667,15 +798,15 @@ public class boxDemo extends JFrame {
             listModel.clear();
             first_flag = true;
 
-            System.out.println("loadPrimaryVideo b: " + video_ori_map.toString()+", size"+video_ori_map.size());
+            System.out.println("loadPrimaryVideo b: " + video_ori_map.toString() + ", size" + video_ori_map.size());
             video_ori_map.clear();
-            video_ori_map.put(0,new drawDemo());
+            video_ori_map.put(0, new drawDemo());
 
 //            slider_p1 = new Slider(status, "Value of the slider is: %d", primary_video, video_ori_map);
 //            slider_p1.setCanvas(video_ori);
             currentFrame = slider_p1.getCurrentFrame();
 
-            System.out.println("loadPrimaryVideo a: " + video_ori_map.toString()+", size"+video_ori_map.size());
+            System.out.println("loadPrimaryVideo a: " + video_ori_map.toString() + ", size" + video_ori_map.size());
         }
 
         // TODO : Reload MetaData Files
@@ -687,7 +818,6 @@ public class boxDemo extends JFrame {
         secondary_video = reader.FolderConfig(path);
         if (!secondary_video.isEmpty()) {
             slider_p3.reset(secondary_video);
-            video_sec.setIcon(new ImageIcon(reader.BImgFromFile(secondary_video.get(0))));
             jb_link.setEnabled(true);
         }
     }
@@ -705,6 +835,10 @@ public class boxDemo extends JFrame {
 //                double y2 = y1+video_ori_map.get(i).shapes.get(j).getBounds2D().getHeight();
 //            }
         }
+    }
+
+    Rectangle2D.Float makeRectangle(int x1, int y1, int x2, int y2) {
+        return new Rectangle2D.Float(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
     }
 
     public static void main(String[] agrs) {

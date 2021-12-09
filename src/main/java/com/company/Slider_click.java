@@ -3,16 +3,16 @@ package com.company;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-@Deprecated
-class Slider_sec extends JSlider implements ChangeListener {
+class Slider_click extends JSlider implements ChangeListener {
 
-    private JLabel canvas;
+    private ClickablePanel canvas;
     private final JLabel status;
     private final String format;
     private ArrayList<File> data;
@@ -21,7 +21,9 @@ class Slider_sec extends JSlider implements ChangeListener {
     private int currentFrame;
     private Map<Integer,drawDemo> video_sec_map;
 
-    Slider_sec(JLabel status, String format, ArrayList<File> video, Map<Integer,drawDemo>video_sec_map) {
+//    HashMap<Shape, String> currShapesColor = new HashMap<>();
+
+    Slider_click(JLabel status, String format, ArrayList<File> video, Map<Integer,drawDemo>video_sec_map) {
         super();
         this.status = status;
         this.format = format;
@@ -60,7 +62,7 @@ class Slider_sec extends JSlider implements ChangeListener {
         setPaintLabels(true);
     }
 
-    public void setCanvas(JLabel canvas) {
+    public void setCanvas(ClickablePanel canvas) {
         this.canvas = canvas;
     }
 
@@ -79,7 +81,13 @@ class Slider_sec extends JSlider implements ChangeListener {
         if (canvas != null) {
             BufferedImage newImage = ImageReader.getInstance().BImgFromFile(data.get(getValue()));
             canvas.setIcon(new ImageIcon(newImage));
-//            canvas.
+//            if (canvas.links!=null){
+//                for(int i=0; i< canvas.links.size(); i++){
+//                    int start_frame = canvas.links.get(i).oriFrame;
+//                    int end_frame = canvas.links.get(i).linkShape.size() + start_frame;
+//                    canvas.color = Color.ORANGE;
+//                }
+//            }
             canvas.repaint();
         }
 //         System.out.println("--------- slider2 change-end--------");
