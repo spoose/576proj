@@ -57,6 +57,8 @@ public class Player extends JFrame {
 //    JButton jbDetect = new JButton("\uDBC0\uDE0C Frame Detect");
 //    JButton jb_redraw = new JButton("\uDBC0\uDC61 Redraw");
 //    JButton jb_link = new JButton("\uDBC1\uDCA1 Link!");
+    JLabel sourceFile;
+    JLabel currFile;
 
     /**
      * panel-bottom right: link info
@@ -118,7 +120,7 @@ public class Player extends JFrame {
         panel1_control_box2.add(jb_import_ori);
         panel1_control_box2.add(jb_play);
         panel1_control_box2.add(jb_stop);
-        panel1_control_box2.setBackground(Color.PINK);
+//        panel1_control_box2.setBackground(Color.PINK);
         jb_import_ori.addActionListener(new FileSelector("Select primary video", Player.this,
                 JFileChooser.FILES_ONLY) {
             @Override
@@ -151,8 +153,22 @@ public class Player extends JFrame {
         BoxLayout layout2 = new BoxLayout(panel2, BoxLayout.Y_AXIS);
         panel2.setLayout(layout2);
         panel2.setBorder(BorderFactory.createTitledBorder("INFO"));
-        JLabel Link_info = new JLabel("links information", JLabel.CENTER);
-        panel2.add(Link_info);
+
+        JPanel sourcePanel = new JPanel();
+        sourcePanel.setLayout( new BoxLayout(sourcePanel, BoxLayout.X_AXIS));
+        JPanel currPanel = new JPanel();
+        currPanel.setLayout( new BoxLayout(currPanel, BoxLayout.X_AXIS));
+
+        sourceFile = new JLabel("TBD");
+        sourcePanel.add(new JLabel("Source Link:", JLabel.CENTER));
+        sourcePanel.add(sourceFile);
+
+        currFile = new JLabel("TBD");
+        currPanel.add(new JLabel("current file:", JLabel.CENTER));
+        currPanel.add(currFile);
+
+        panel2.add(currPanel);
+        panel2.add(sourcePanel);
 
 
         /**
@@ -167,9 +183,9 @@ public class Player extends JFrame {
 
         Container container=getContentPane();    //获取当前窗口的内容窗格
         container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
-        container.add(Box.createRigidArea(new Dimension(100,0)));
+//        container.add(Box.createRigidArea(new Dimension(100,0)));
 //        container.add(panel0);
-        container.add(Box.createRigidArea(new Dimension(100,0)));
+//        container.add(Box.createRigidArea(new Dimension(100,0)));
         container.add(group);
         setLayout(new FlowLayout());
 
@@ -318,6 +334,7 @@ public class Player extends JFrame {
         primary_video = reader.FolderConfig(imgPath);
         if (!primary_video.isEmpty()) {
             slider_p1.reset(primary_video);
+            currFile.setText(imgPath);
 
             GasonRead read = new GasonRead(jsonPath);
             System.out.println("reaad:" + read.toString());
@@ -328,6 +345,12 @@ public class Player extends JFrame {
                 for (int j = 0; j < 8999; j++){//initialization
                     video_area.shapeListMap.put(j,new ArrayList<>());
                 }
+                audioPlayer.open(reader.BWavFromFile(imgPath));
+                if (imported) {
+                    audioPlayer.play();
+                }
+                imported = true;
+
                 return;
             }
 //            ArrayList<Map<Integer,Shape>> linkShapeList = new ArrayList<>();
