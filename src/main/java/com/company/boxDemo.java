@@ -391,6 +391,8 @@ public class boxDemo extends JFrame {
         panel1_control_box.add(jb_prev);
         panel1_control_box.add(slider_p1);
         panel1_control_box.add(jb_next);
+        slider_p1.setPreferredSize(new Dimension(300,50));
+        panel1_control_box.setPreferredSize(new Dimension(300,50));
 //        panel1_control_box.setBackground(Color.pink);
 //        panel1_control_box2.setLayout(new BoxLayout(panel1_control_box2, BoxLayout.X_AXIS));
 //        panel1_control_box2.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -399,7 +401,7 @@ public class boxDemo extends JFrame {
         panel1_control_box2.add(jbDectAnchor2);
         panel1_control_box2.add(jbDetect);
         panel1_control_box2.add(jb_redraw);
-        panel1_control_box2.setBackground(Color.PINK);
+//        panel1_control_box2.setBackground(Color.PINK);
 
         jb_link.setEnabled(false);
         jbDectAnchor2.setEnabled(false);
