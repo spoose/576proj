@@ -136,7 +136,9 @@ public class ClickablePanel extends JLabel {
 //                            for (int i=0; i < shapeListMap.get(currentFrame).size() ;i++){//each frame's shapes
                         //                        int targetFrame = link.targetFrame;
                         //                        String targetPath = link.targetPath;
-                        JOptionPane.showMessageDialog(null, "clicked"+i+"'s frame,"+"target frame: "+links.get(i).targetFrame+", target path: "+links.get(i).targetPath, "Click", JOptionPane.INFORMATION_MESSAGE);
+
+//                        JOptionPane.showMessageDialog(null, "clicked"+i+"'s frame,"+"target frame: "+links.get(i).targetFrame+", target path: "+links.get(i).targetPath, "Click", JOptionPane.INFORMATION_MESSAGE);
+
 //                            System.out.println("targetJsonPathList.get("+i+"): "+targetJsonPathList.get(i));
 //                            System.out.println("targetPathList.get("+i+"): "+targetPathList.get(i));
 
@@ -151,6 +153,8 @@ public class ClickablePanel extends JLabel {
                         System.out.println("links.get(i).targetJsonPath:" + links.get(i).targetJsonPath);
                         System.out.println("temShape:" + temShape);
                         link = links.get(i);
+                        parent.sourceFile.setText(links.get(i).linkName);
+
 
                         //loadPrimaryVideo leads to links change
                         parent.loadPrimaryVideo(links.get(i).targetPath, links.get(i).targetJsonPath);//links.get(i).targetPath
