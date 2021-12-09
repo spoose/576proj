@@ -3,7 +3,6 @@ package com.company;
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -78,5 +77,6 @@ class Slider extends JSlider {
 
     public interface ManualChangeListener {
         void OnManualStateChange();
+
     }
 }

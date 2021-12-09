@@ -21,12 +21,19 @@ public class ClickablePanel extends JLabel {
     Player parent;
     HyperLink link;//
     ArrayList<HyperLink> links;
-    ArrayList<Color> colors = new ArrayList<>();
+    ArrayList<Color> colors = new ArrayList<>(){{
+        add(Color.BLUE);
+        add(Color.green);
+        add(Color.CYAN);
+        add(Color.ORANGE);
+        add(Color.YELLOW);
+    }};
     Map<Integer, ArrayList<Rectangle>> shapeListMap;
     ArrayList<String> targetJsonPathList;
     ArrayList<String> targetPathList;
     ArrayList<Integer> targetFrameList;
 
+    Map<Integer, ArrayList<Integer>> frameColorsMap = new HashMap<>();
 
 //    JButton btn_clear = new JButton("clear");
 //    ArrayList<Shape> shapes = new ArrayList<Shape>();
@@ -39,9 +46,6 @@ public class ClickablePanel extends JLabel {
 //        System.out.println("ClickablePanel() link:"+link.shapeMap.get(100));
         this.shapeListMap = new HashMap<>();
         this.parent = parent;
-        this.colors.add(Color.BLUE);
-        this.colors.add(Color.green);
-        this.colors.add(Color.RED);
         x = y = x2 = y2 = 0; //
 
         setBorder(BorderFactory.createLineBorder(Color.black));
@@ -148,9 +152,11 @@ public class ClickablePanel extends JLabel {
                         System.out.println("temShape:" + temShape);
                         link = links.get(i);
 
+                        //loadPrimaryVideo leads to links change
                         parent.loadPrimaryVideo(links.get(i).targetPath, links.get(i).targetJsonPath);//links.get(i).targetPath
+                        System.out.println("links.size after loadPrimaryVideo: " + links.size());
+                        System.out.println("tempTargetFrame after loadPrimaryVideo: " + tempTargetFrame);
                         System.out.println("parent.slider_p1.getValue() before set:"+parent.slider_p1.getValue());
-                        System.out.println("links.get(i).targetFrame2: " + links.get(i).targetFrame);
                         parent.slider_p1.setValue(tempTargetFrame);
                         System.out.println("parent.slider_p1.getValue() after set:"+parent.slider_p1.getValue());
                         parent.getJb_play().doClick();
@@ -197,8 +203,16 @@ public class ClickablePanel extends JLabel {
         currentFrame = parent.slider_p1.getCurrentFrame();
         if (shapeListMap.get(currentFrame) != null) {
             for (int i = 0; i < shapeListMap.get(currentFrame).size(); i++) {
+
 //            if(i == link.shapeMap.get(currentFrame).size()-1){
-                g2.setPaint(this.colors.get(i));
+//                g2.setPaint(this.colors.get(i));
+//                System.out.println("color in cp:" + color);
+                if (frameColorsMap.get(currentFrame).get(i)!=null){
+                    g2.setPaint(new Color(frameColorsMap.get(currentFrame).get(i)));
+                }
+                else {
+                    g2.setPaint(this.colors.get(i));
+                }
 //            }else{
 //                g2.setPaint(Color.BLACK.getRGB());
 //            }

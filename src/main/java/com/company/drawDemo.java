@@ -17,6 +17,8 @@ public class drawDemo extends JLabel {
     JButton btn_clear = new JButton("clear");
 
     ArrayList<Shape> shapes = new ArrayList<Shape>();
+    boxDemo parent;
+
 
     public static void main(String[] args) {
         ImageReader reader = ImageReader.getInstance();
@@ -112,6 +114,7 @@ public class drawDemo extends JLabel {
             setEndPoint(e.getX(), e.getY());
             Shape r = makeRectangle(x,y, e.getX(), e.getY());//new
             shapes.add(r);//new
+            System.out.println("------drawDemo: parent.video_ori_map.get(parent.currentFrame).shapes: "+parent.video_ori_map.get(parent.currentFrame).shapes);
             repaint();
             x = y = x2 = y2 = 0;
         }
@@ -137,12 +140,28 @@ public class drawDemo extends JLabel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setStroke(new BasicStroke(2));
         g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.50f));
-        for(int i=0; i< shapes.size();i++ ){
-            if(i == shapes.size()-1){
+        for(int i=0; i< shapes.size();i++ ){//shape 0, 1, 2
+            System.out.println("------drawDemo: shapes.size(): "+shapes.size()+", i:"+i);
+            if (parent.frameColorsMap.get(parent.currentFrame)!=null){//if current frame doesn't contain color info or no box
+//                System.out.println("------drawDemo: parent.frameColorsMap.get(parent.currentFrame).get(i): "+parent.frameColorsMap.get(parent.currentFrame).get(i)+",i is "+i);
+                if (i<parent.frameColorsMap.get(parent.currentFrame).size()){
+                    System.out.println("set color:"+new Color(parent.frameColorsMap.get(parent.currentFrame).get(i)));
+                    g2.setPaint(new Color(parent.frameColorsMap.get(parent.currentFrame).get(i)));
+                }else {
+                    System.out.println("set color: red");
+                    g2.setPaint(Color.red);
+                }
+            }else {
                 g2.setPaint(Color.RED);
-            }else{
-                g2.setPaint(Color.BLACK);
+//                if(i == shapes.size()-1){
+//                    g2.setPaint(Color.RED);
+//                }else{
+//                    g2.setPaint(Color.BLACK);
+//                }
             }
+//            g2.setPaint(parent.colors.get(i));
+//            g2.setPaint(color);
+
             g2.draw(shapes.get(i));
         }
 
