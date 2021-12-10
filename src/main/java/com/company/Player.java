@@ -16,7 +16,9 @@ public class Player extends JFrame {
     AbstractPlayer<BufferedInputStream> audioPlayer;
 
     //    drawDemo video_ori_label;
-    boolean imported = false;
+    boolean linkClicked = false;
+    boolean imported = true;
+
     boolean first_flag = true;
     boolean videoPlayed = false;
     Thread video_thread;
@@ -57,6 +59,8 @@ public class Player extends JFrame {
 //    JButton jbDetect = new JButton("\uDBC0\uDE0C Frame Detect");
 //    JButton jb_redraw = new JButton("\uDBC0\uDC61 Redraw");
 //    JButton jb_link = new JButton("\uDBC1\uDCA1 Link!");
+    JLabel sourceFile;
+    JLabel currFile;
 
     /**
      * panel-bottom right: link info
@@ -118,14 +122,14 @@ public class Player extends JFrame {
         panel1_control_box2.add(jb_import_ori);
         panel1_control_box2.add(jb_play);
         panel1_control_box2.add(jb_stop);
-        panel1_control_box2.setBackground(Color.PINK);
+//        panel1_control_box2.setBackground(Color.PINK);
         jb_import_ori.addActionListener(new FileSelector("Select primary video", Player.this,
                 JFileChooser.FILES_ONLY) {
             @Override
             void onFileSelected(File selectedFile) {
                 String jsonPath = selectedFile.getPath();
                 String imgPath = getImgPath(jsonPath,0);//get oriPath, index doesn't matter
-                loadPrimaryVideo(imgPath,jsonPath);
+                loadPrimaryVideo(imgPath,jsonPath,0);
             }
         });
 
@@ -151,8 +155,22 @@ public class Player extends JFrame {
         BoxLayout layout2 = new BoxLayout(panel2, BoxLayout.Y_AXIS);
         panel2.setLayout(layout2);
         panel2.setBorder(BorderFactory.createTitledBorder("INFO"));
-        JLabel Link_info = new JLabel("links information", JLabel.CENTER);
-        panel2.add(Link_info);
+
+        JPanel sourcePanel = new JPanel();
+        sourcePanel.setLayout( new BoxLayout(sourcePanel, BoxLayout.X_AXIS));
+        JPanel currPanel = new JPanel();
+        currPanel.setLayout( new BoxLayout(currPanel, BoxLayout.X_AXIS));
+
+        sourceFile = new JLabel("TBD");
+        sourcePanel.add(new JLabel("Source Link:", JLabel.CENTER));
+        sourcePanel.add(sourceFile);
+
+        currFile = new JLabel("TBD");
+        currPanel.add(new JLabel("current file:", JLabel.CENTER));
+        currPanel.add(currFile);
+
+        panel2.add(currPanel);
+        panel2.add(sourcePanel);
 
 
         /**
@@ -167,9 +185,9 @@ public class Player extends JFrame {
 
         Container container=getContentPane();    //获取当前窗口的内容窗格
         container.setLayout(new BoxLayout(container,BoxLayout.Y_AXIS));
-        container.add(Box.createRigidArea(new Dimension(100,0)));
+//        container.add(Box.createRigidArea(new Dimension(100,0)));
 //        container.add(panel0);
-        container.add(Box.createRigidArea(new Dimension(100,0)));
+//        container.add(Box.createRigidArea(new Dimension(100,0)));
         container.add(group);
         setLayout(new FlowLayout());
 
@@ -179,7 +197,6 @@ public class Player extends JFrame {
     }
 
     public JButton getJb_play(){
-
         return this.jb_play;
     }
 
@@ -191,9 +208,8 @@ public class Player extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            videoPlayed = true;
-
             currentFrame = slider_p1.getCurrentFrame();
+            videoPlayed = true;
             System.out.println("btnPlayListener currentFrame:"+currentFrame+"slider_p1.getValue():"+slider_p1.getValue());
 
             timeStamp = System.currentTimeMillis();
@@ -247,7 +263,7 @@ public class Player extends JFrame {
     }
 
     private long frameToMilsec() {
-        if (!imported || currentFrame < 1) {
+        if (currentFrame < 1) {
             return 0;
         }
         return (currentFrame * 33L) + ((long)(currentFrame / 3) + 1);
@@ -268,6 +284,7 @@ public class Player extends JFrame {
                 e1.printStackTrace();
             }
 
+            jb_stop.setEnabled(false);
             jb_play.setEnabled (true);
         }
     }
@@ -313,21 +330,39 @@ public class Player extends JFrame {
         return imgPath;
     }
 
-    public void loadPrimaryVideo(String imgPath,String jsonPath) {
+    public void loadPrimaryVideo(String imgPath,String jsonPath, int clickTargetFrame) {
         ImageReader reader = ImageReader.getInstance();
         primary_video = reader.FolderConfig(imgPath);
         if (!primary_video.isEmpty()) {
+
             slider_p1.reset(primary_video);
+            currFile.setText(imgPath);
+            jb_play.setEnabled (true);
+            jb_stop.setEnabled (true);
 
             GasonRead read = new GasonRead(jsonPath);
             System.out.println("reaad:" + read.toString());
             if (read.getLinkList() == null){
+//                JOptionPane.showMessageDialog(null,"last video no json further");
                 System.out.println("read.getLinkList() == null");
                 System.out.println("last video, doesn't contain hyperlink ");
                 video_area.shapeListMap = new HashMap<>();
                 for (int j = 0; j < 8999; j++){//initialization
                     video_area.shapeListMap.put(j,new ArrayList<>());
                 }
+
+                audioPlayer.open(reader.BWavFromFile(imgPath));
+                if (imported){//if file is import, video audio should stop
+                    jb_stop.doClick();
+                    slider_p1.reset(primary_video);
+                }//if file is cliked, video audio should play
+                if (linkClicked) {
+                    slider_p1.setValue(clickTargetFrame);
+                    jb_play.doClick();
+                }
+                imported= true;
+                linkClicked = false;
+
                 return;
             }
 //            ArrayList<Map<Integer,Shape>> linkShapeList = new ArrayList<>();
@@ -407,59 +442,28 @@ public class Player extends JFrame {
 //            video_area.link = loadLinkData(fRangeStart,fRangeEnd);
 //            video_area.loadLink(fRangeStart,fRangeEnd);//fake link
 //            video_ori.shapes.clear();
-            jb_play.setEnabled (true);
+//            jb_play.setEnabled (true);
 //            jb_stop.setEnabled (true);
 
             audioPlayer.open(reader.BWavFromFile(imgPath));
-            if (imported) {
-                audioPlayer.play();
+            if (imported){//if file is import, video audio should stop
+                System.out.println("--------------------------imported");
+                jb_stop.doClick();
+                slider_p1.reset(primary_video);
+//                audioPlayer.pause();
+            }//if file is cliked, video audio should play
+            if (linkClicked) {
+                System.out.println("--------------------------linkClicked");
+                slider_p1.setValue(clickTargetFrame);
+                jb_play.doClick();
+//                audioPlayer.play();
             }
-            imported = true;
+            imported= true;
+            linkClicked = false;
         }
 
         // TODO : Reload MetaData Files
     }
-
-//    public HyperLink loadLinkData(int startFrame, int endFrame){
-//        HyperLink link;
-//
-//
-//        // a link has one box in a frame
-//        Map<Integer,Shape> linkShape = new HashMap<>();// this should read from file saved by authoring, manual create here
-//        for(int i=50; i < 150; i++){
-//            int testOffset = (i-startFrame);
-//            linkShape.put(100,video_area.makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
-//        }
-//
-//        Map<Integer,Shape> linkShape2 = new HashMap<>();// this should read from file saved by authoring, manual create here
-//        for(int i=100; i < 250; i++){
-//            int testOffset = (i-startFrame);
-//            linkShape.put(100,video_area.makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
-//        }
-//        ArrayList<Map<Integer,Shape>> linkShapeList = new ArrayList<>();
-//        linkShapeList.add(linkShape);
-//        linkShapeList.add(linkShape2);
-//
-//        Map<Integer,ArrayList<Shape>> shapeMap = new HashMap<>();
-//        for(int i=0; i < 8999; i++){
-//            for(int j=0; j < linkShapeList.size(); j++){
-//                if (linkShapeList.get(j).get(i)!=null){
-//
-//                }
-//            }
-//
-//            ArrayList<Shape> shapes = new ArrayList<>();
-//            if (i>=startFrame && i<=startFrame+endFrame){
-//                int testOffset = (i-startFrame);
-//                shapes =
-////                        .add(makeRectangle(50+testOffset,50+testOffset,180+testOffset,190+testOffset));
-//                shapeMap.put(i,shapes);
-//            }
-//        }
-//        System.out.println("loadLink():"+shapeMap.size());
-//        link = new HyperLink("testlink","/Users/yze/USCOne","/Users/yze/USCTwo",200,shapeMap,Color.green);
-//        return link;
-//    }
 
     public static void main(String[] agrs)
     {
