@@ -136,7 +136,9 @@ public class ClickablePanel extends JLabel {
 //                            for (int i=0; i < shapeListMap.get(currentFrame).size() ;i++){//each frame's shapes
                         //                        int targetFrame = link.targetFrame;
                         //                        String targetPath = link.targetPath;
-                        JOptionPane.showMessageDialog(null, "clicked"+i+"'s frame,"+"target frame: "+links.get(i).targetFrame+", target path: "+links.get(i).targetPath, "Click", JOptionPane.INFORMATION_MESSAGE);
+
+//                        JOptionPane.showMessageDialog(null, "clicked"+i+"'s frame,"+"target frame: "+links.get(i).targetFrame+", target path: "+links.get(i).targetPath, "Click", JOptionPane.INFORMATION_MESSAGE);
+
 //                            System.out.println("targetJsonPathList.get("+i+"): "+targetJsonPathList.get(i));
 //                            System.out.println("targetPathList.get("+i+"): "+targetPathList.get(i));
 
@@ -151,15 +153,19 @@ public class ClickablePanel extends JLabel {
                         System.out.println("links.get(i).targetJsonPath:" + links.get(i).targetJsonPath);
                         System.out.println("temShape:" + temShape);
                         link = links.get(i);
+                        parent.sourceFile.setText(links.get(i).linkName);
+
 
                         //loadPrimaryVideo leads to links change
-                        parent.loadPrimaryVideo(links.get(i).targetPath, links.get(i).targetJsonPath);//links.get(i).targetPath
+                        parent.linkClicked= true;
+                        parent.imported= false;
+                        parent.loadPrimaryVideo(links.get(i).targetPath, links.get(i).targetJsonPath,tempTargetFrame);//links.get(i).targetPath
                         System.out.println("links.size after loadPrimaryVideo: " + links.size());
                         System.out.println("tempTargetFrame after loadPrimaryVideo: " + tempTargetFrame);
                         System.out.println("parent.slider_p1.getValue() before set:"+parent.slider_p1.getValue());
-                        parent.slider_p1.setValue(tempTargetFrame);
+//                        parent.slider_p1.setValue(tempTargetFrame);
                         System.out.println("parent.slider_p1.getValue() after set:"+parent.slider_p1.getValue());
-                        parent.getJb_play().doClick();
+//                        parent.getJb_play().doClick();
                         System.out.println("------------------you clicked--end--------------");
                     }
                 }
